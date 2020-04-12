@@ -48,7 +48,7 @@ fnImportData_global <- function (path_dataset,deathTax) {
     ) %>%
     mutate (
       perc_exit              = (death * 100)/(death+recovered),
-      confirmed-recovered    = confirmed - recovered,
+      confirmedrecovered     = confirmed - recovered,
       confirmed_estimated    = (death * 100) /  deathTax
     ) %>%
     return()
@@ -161,6 +161,111 @@ fnPlotGlobalCountyDetail_confirmed <- function(covid19, countries){
   )
 }
 
+fnPlotGlobal_confirmedrecovered <- function(covid19){
+  
+  filename = "./data/png/global/covid19_global_plotGlobal_confirmedrecovered.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>%
+    arrange(
+      obs_date
+    ) %>%
+    ggplot(aes(x = obs_date, y=confirmedrecovered)) +
+    geom_col() +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "COVID- Global Evolution for Covid-19  Script in R (confirmedrecovered)",
+      x       = "Date",
+      y       = "Condirmedrecovered",
+      caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+fnPlotGlobalDetail_confirmedrecovered <- function(covid19){
+  
+  filename = "./data/png/global/covid19_global_plotGlobalDetail_confirmedrecovered.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>%
+    arrange(
+      obs_date
+    ) %>%
+    ggplot(aes(x = obs_date, y=confirmedrecovered)) +
+    geom_col() +
+    facet_wrap(~country, nrow=7) +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = " Global Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      x       = "Date",
+      y       = "Confirmedrecovered",
+      caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, countries){
+  
+  filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmedrecovered.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>%
+    filter(
+      country %in% countries
+    ) %>%
+    arrange(
+      obs_date
+    ) %>%
+    ggplot(aes(x = obs_date, y=confirmedrecovered)) +
+    geom_col() +
+    facet_wrap(~country, nrow=3) +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "Global Filter By Country, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      x       = "Date",
+      y       = "Condirmedrecovered",
+      caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+
 fnPlotGlobal_confirmed_estimated <- function(covid19){
   
   filename = "./data/png/global/covid19_global_plotGlobal_confirmed_estimated.png"
@@ -180,7 +285,7 @@ fnPlotGlobal_confirmed_estimated <- function(covid19){
     labs(
       title   = "COVID- Global Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
-      y       = "Condirmed",
+      y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
@@ -214,7 +319,7 @@ fnPlotGlobalDetail_confirmed_estimated <- function(covid19){
     labs(
       title   = " Global Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
-      y       = "Condirmed",
+      y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
@@ -251,7 +356,7 @@ fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, countries){
     labs(
       title   = "Global Filter By Country, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
-      y       = "Condirmed",
+      y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
@@ -285,6 +390,11 @@ fnMain <- function (path_wd, path_dataset,path_dataframe,deathTax,countries){
   fnPlotGlobal_confirmed(covid19_global)
   fnPlotGlobalDetail_confirmed(covid19_global)
   fnPlotGlobalCountyDetail_confirmed(covid19_global, countries)
+  
+  # confirmedrecovered
+  fnPlotGlobal_confirmedrecovered(covid19_global)
+  fnPlotGlobalDetail_confirmedrecovered(covid19_global)
+  fnPlotGlobalCountyDetail_confirmedrecovered(covid19_global, countries)
   
   # confirmed_estimated
   fnPlotGlobal_confirmed_estimated(covid19_global)

@@ -1,4 +1,4 @@
-country;obs_date;confirmed;death;recovered;perc_exit;confirm_recov;confirmed_estimated
+country;obs_date;confirmed;death;recovered;perc_exit;confirmedrecovered;confirmed_estimated
  Azerbaijan;02/28/2020;     1;    0;    0;NA;     1;0,000000e+00
 ('St. Martin',);03/10/2020;     2;    0;    0;NA;     2;0,000000e+00
 Afghanistan;02/24/2020;     1;    0;    0;NA;     1;0,000000e+00
