@@ -370,6 +370,54 @@ fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, countries){
   )
 }
 
+fnPlotGlobalLastdate <- function(covid19){
+  
+  filename = "./data/png/global/covid19_global_plotGlobalLastdate.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>% 
+    arrange(
+      desc(obs_date)
+    ) %>%
+    filter (
+      !is.na(confirmed),
+      !is.na(confirmed_estimated),
+      !is.na(recovered),
+      !is.na(death),
+    ) %>% 
+    head(
+      1              # Nos quedamos con la última
+    ) %>%
+    gather(
+      "type_cases",
+      "cases",
+      3:7
+    )%>%
+    ggplot() +
+    geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
+    coord_polar() +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "Global Evolution for Covid-19  Script in R (Last Date)",
+      x       = "Cases",
+      y       = "Last Date",
+      color   = "Data",
+      caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
 
 # Main Function ---------------------------------------------------------
 
@@ -400,6 +448,9 @@ fnMain <- function (path_wd, path_dataset,path_dataframe,deathTax,countries){
   fnPlotGlobal_confirmed_estimated(covid19_global)
   fnPlotGlobalDetail_confirmed_estimated(covid19_global)
   fnPlotGlobalCountyDetail_confirmed_estimated(covid19_global, countries)
+  
+  # lastdate
+  fnPlotGlobalLastdate(covid19_global)
 
   return ("Execution OK")
 }
