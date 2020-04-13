@@ -19,9 +19,8 @@
 
 # Libraries ---------------------------------------------------------------
 
-fnLoad_libraries <- function(){
+fnLoad_libraries_global <- function(){
   library(tidyverse)
-  library(modelr)
   options(na.action = na.warn) # No tenemos en cuenta los NA
 }
 
@@ -31,6 +30,7 @@ fnImportData_global <- function (path_dataset,deathTax) {
   
   read.csv(path_dataset) %>%
     rename (
+      sno        = SNo,
       confirmed  = Confirmed,
       death      = Deaths,
       recovered  = Recovered,
@@ -54,6 +54,35 @@ fnImportData_global <- function (path_dataset,deathTax) {
     return()
 }
 
+# Utils -------------------------------------------------------------------
+
+fnGetCountryList <- function (covid19,n_countries){
+  
+  covid19 %>%
+    arrange(
+      desc(obs_date)
+    ) %>% 
+    head(
+      1
+    ) -> covid19_lastObs_date
+  
+  
+  covid19 %>%
+    filter(
+      obs_date == covid19_lastObs_date$obs_date
+    ) %>%
+    arrange(
+      desc(confirmed)
+    ) %>%
+    head(
+      n_countries
+    ) %>%
+    arrange(
+      country
+    )-> covid19_top_countries_confirmed
+  
+  return (covid19_top_countries_confirmed$country)
+}
 
 # Plots -------------------------------------------------------------------
 
@@ -124,7 +153,7 @@ fnPlotGlobalDetail_confirmed <- function(covid19){
   )
 }
 
-fnPlotGlobalCountyDetail_confirmed <- function(covid19, countries){
+fnPlotGlobalCountyDetail_confirmed <- function(covid19, n_countries){
   
   filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmed.png"
   
@@ -133,14 +162,14 @@ fnPlotGlobalCountyDetail_confirmed <- function(covid19, countries){
   
   covid19 %>%
     filter(
-      country %in% countries
+      country %in% fnGetCountryList(covid19,n_countries)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed)) +
     geom_col() +
-    facet_wrap(~country, nrow=3) +
+    facet_wrap(~country, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
@@ -228,7 +257,7 @@ fnPlotGlobalDetail_confirmedrecovered <- function(covid19){
   )
 }
 
-fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, countries){
+fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, n_countries){
   
   filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmedrecovered.png"
   
@@ -237,14 +266,14 @@ fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, countries){
   
   covid19 %>%
     filter(
-      country %in% countries
+      country %in% fnGetCountryList(covid19,n_countries)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmedrecovered)) +
     geom_col() +
-    facet_wrap(~country, nrow=3) +
+    facet_wrap(~country, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
@@ -264,7 +293,6 @@ fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, countries){
     units    = "cm"
   )
 }
-
 
 fnPlotGlobal_confirmed_estimated <- function(covid19){
   
@@ -333,7 +361,7 @@ fnPlotGlobalDetail_confirmed_estimated <- function(covid19){
   )
 }
 
-fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, countries){
+fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, n_countries){
   
   filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmed_estimated.png"
   
@@ -342,14 +370,14 @@ fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, countries){
   
   covid19 %>%
     filter(
-      country %in% countries
+      country %in% fnGetCountryList(covid19,n_countries)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed_estimated)) +
     geom_col() +
-    facet_wrap(~country, nrow=3) +
+    facet_wrap(~country, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
@@ -421,9 +449,9 @@ fnPlotGlobalLastdate <- function(covid19){
 
 # Main Function ---------------------------------------------------------
 
-fnMain <- function (path_wd, path_dataset,path_dataframe,deathTax,countries){
-  
-  fnLoad_libraries()
+fnMain <- function (path_wd, path_dataset,path_dataframe,deathTax,n_countries){
+
+  fnLoad_libraries_global()
   setwd(path_wd)
   
   covid19_global <-fnImportData_global(path_dataset,deathTax)
@@ -437,23 +465,24 @@ fnMain <- function (path_wd, path_dataset,path_dataframe,deathTax,countries){
   # confirmed
   fnPlotGlobal_confirmed(covid19_global)
   fnPlotGlobalDetail_confirmed(covid19_global)
-  fnPlotGlobalCountyDetail_confirmed(covid19_global, countries)
+  fnPlotGlobalCountyDetail_confirmed(covid19_global, n_countries)
   
   # confirmedrecovered
   fnPlotGlobal_confirmedrecovered(covid19_global)
   fnPlotGlobalDetail_confirmedrecovered(covid19_global)
-  fnPlotGlobalCountyDetail_confirmedrecovered(covid19_global, countries)
+  fnPlotGlobalCountyDetail_confirmedrecovered(covid19_global, n_countries)
   
   # confirmed_estimated
   fnPlotGlobal_confirmed_estimated(covid19_global)
   fnPlotGlobalDetail_confirmed_estimated(covid19_global)
-  fnPlotGlobalCountyDetail_confirmed_estimated(covid19_global, countries)
+  fnPlotGlobalCountyDetail_confirmed_estimated(covid19_global, n_countries)
   
   # lastdate
-  fnPlotGlobalLastdate(covid19_global)
+  #fnPlotGlobalLastdate(covid19_global)
 
   return ("Execution OK")
 }
+
 
 # Main --------------------------------------------------------------------
 
@@ -463,12 +492,12 @@ fnMain <- function (path_wd, path_dataset,path_dataframe,deathTax,countries){
     path_dataset    : Path for dataset IN,
     path_dataframe  : Path for dataframe OUT,
     deathTax        : Death tax for Covid-19,
-    countries       : List of countries for filters porpouse
+    n_countries     : Number of countries who show in detail wrap
 "
 
 fnMain("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
        "./data/csv/global/covid19_global_dataset.csv",
        "./data/csv/global/covid19_global_dataframe.csv",
        1.4,
-       c("Spain","Italy","Mainland China", "South Korea", "US","UK","Iran")
+       10
       )
