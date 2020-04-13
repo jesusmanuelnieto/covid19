@@ -406,7 +406,7 @@ fnPlotEspCcaanameDetail_confirmed_estimated <- function(covid19, n_ccaanames){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Spain Filter Most Confirmed CCAA,Names, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -437,7 +437,9 @@ fnPlotEspLastdate <- function(covid19){
       !is.na(confirmed),
       !is.na(confirmed_estimated),
       !is.na(recovered),
-      !is.na(death)
+      !is.na(death),
+      !is.na(uci),
+      !is.na(hospitalized),
     ) %>% 
     head(
       1              # Nos quedamos con la última
@@ -459,6 +461,156 @@ fnPlotEspLastdate <- function(covid19){
       y       = "Last Date",
       color   = "Data",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+fnPlotEsp_lines <- function(covid19){
+  
+  filename = "./data/png/esp/covid19_esp_plotEsp_lines.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>% 
+    arrange(
+      obs_date
+    ) %>%
+    group_by(
+      obs_date
+    ) %>%
+    filter (
+      !is.na(confirmed),
+      !is.na(uci),
+      !is.na(recovered),
+      !is.na(hospitalized),
+      !is.na(death)
+    ) %>%
+    summarise(
+      confirmed      = sum(confirmed),
+      uci            = sum(uci),
+      recovered      = sum(recovered),
+      hospitalized   = sum(hospitalized),
+      death          = sum(death)
+    )%>%
+    ggplot(aes(x = obs_date)) +
+    geom_line(aes(y = confirmed)     ,  color = "black")   +
+    geom_line(aes(y = uci)           ,  color = "yellow")  +
+    geom_line(aes(y = recovered)     ,  color = "green")   +
+    geom_line(aes(y = hospitalized)  ,  color = "blue")    +
+    geom_line(aes(y = death)         ,  color = "red")     +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "COVID-19 Spanish Evo General Lines for Covid-19  Script in R",
+      x       = "Cases",
+      y       = "Date",
+      color   = "Data",
+      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+fnPlotEspDetail_lines <- function(covid19){
+  
+  filename = "./data/png/esp/covid19_esp_plotEspDetail_lines.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>% 
+    arrange(
+      obs_date
+    ) %>%
+    filter (
+      !is.na(confirmed),
+      !is.na(uci),
+      !is.na(recovered),
+      !is.na(hospitalized),
+      !is.na(death)
+    ) %>%
+    ggplot(aes(x = obs_date)) +
+    geom_line(aes(y = confirmed)     ,  color = "black")   +
+    geom_line(aes(y = uci)           ,  color = "yellow")  +
+    geom_line(aes(y = recovered)     ,  color = "green")   +
+    geom_line(aes(y = hospitalized)  ,  color = "blue")    +
+    geom_line(aes(y = death)         ,  color = "red")     +
+    facet_wrap(~ccaa.name, nrow=6)  +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "COVID-19 Spanish Evo General Detail Lines for Covid-19  Script in R",
+      x       = "Cases",
+      y       = "Date",
+      color   = "Data",
+      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+fnPlotEspCcaanameDetail_lines <- function(covid19, n_ccaanames){
+  
+  filename = "./data/png/esp/covid19_esp_plotEspCcaanameDetail_lines.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>%
+    filter(
+      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
+    )  %>% 
+    arrange(
+      obs_date
+    ) %>%
+    filter (
+      !is.na(confirmed),
+      !is.na(uci),
+      !is.na(recovered),
+      !is.na(hospitalized),
+      !is.na(death)
+    ) %>%
+    ggplot(aes(x = obs_date)) +
+    geom_line(aes(y = confirmed)     ,  color = "black")   +
+    geom_line(aes(y = uci)           ,  color = "yellow")  +
+    geom_line(aes(y = recovered)     ,  color = "green")   +
+    geom_line(aes(y = hospitalized)  ,  color = "blue")    +
+    geom_line(aes(y = death)         ,  color = "red")     +
+    facet_wrap(~ccaa.name, nrow=4)  +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "COVID- Spain Filter Most Confirmed CCAA,Names, Detail Evolution for Covid-19  Script in R",
+      x       = "Cases",
+      y       = "Date",
+      color   = "Data",
+      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -504,6 +656,11 @@ fnMainEsp <- function (path_wd, path_dataset,path_dataframe,deathTax,n_ccaanames
   # lastdate
   fnPlotEspLastdate(covid19_esp)
 
+  # lines
+  fnPlotEsp_lines(covid19_esp)
+  fnPlotEspDetail_lines(covid19_esp)
+  fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
+  
   return ("Execution OK")
 }
 
