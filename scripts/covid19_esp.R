@@ -1,5 +1,5 @@
 "
-  @script:      covid19_global
+  @script:      covid19_esp
   @autor:       Jesús Manuel Nieto Carracedo
   @email1:      jesusmanuel.nieto@etani.es
   @email2:      jesusmanuel.nieto@gmail.com
@@ -7,55 +7,80 @@
   @linkedin:    https://es.linkedin.com/in/jes%C3%BAs-manuel-nieto-carracedo-77128424
   @github:      https://github.com/jesusmanuelnieto
   @description: Script para la manipulación y generación de varías gráficas sobre la evolución del
-  virus COVID-19 a nivel mundial.
+  virus COVID-19 a nivel del Reino de España.
 
   @repository:  https://github.com/jesusmanuelnieto/covid19.git
   @sources:
   {
-    @data:         https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset#covid_19_data.csv
+    @data:         https://covid19.isciii.es/
     @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
   }
 "
 
 # Libraries ---------------------------------------------------------------
 
-fnLoad_libraries_global <- function(){
+fnLoad_libraries_esp <- function(){
   library(tidyverse)
+  library(lubridate)
 }
 
 # Import Data -------------------------------------------------------------
 
-fnImportData_global <- function (path_dataset,deathTax) {
+fnImportData_esp <- function (path_dataset,deathTax) {
+  
+  # Tribble con los nombres de las comunidades autónomas
+  tribble(
+    ~CCAA             , ~CCAA.Name,
+    "AN"              , "Andalucia",
+    "AR"              , "Aragón",
+    "AS"              , "Asturias",
+    "CB"              , "Cantabria",
+    "CE"              , "Ceuta",
+    "CL"              , "Castilla y León",
+    "CM"              , "Castilla la Mancha",
+    "CN"              , "Canarias",
+    "CT"              , "Cataluña",
+    "EX"              , "Extremadura",
+    "GA"              , "Galicia",
+    "IB"              , "Islas Baleares",
+    "MC"              , "Murcia",
+    "MD"              , "Madrid",
+    "ME"              , "Melilla",
+    "NC"              , "Navarra",
+    "PV"              , "País Vasco",
+    "RI"              , "La Rioja",
+    "VC"              , "Valencia"
+  ) -> ccaa
   
   read.csv(path_dataset) %>%
-    rename (
-      sno        = SNo,
-      confirmed  = Confirmed,
-      death      = Deaths,
-      recovered  = Recovered,
-      obs_date   = ObservationDate,
-      country    = Country.Region
+    filter(
+      CCAA != "Los datos de estas comunidades son datos de prevalencia (personas ingresadas a fecha de hoy). No reflejan el total de personas que han sido hospitalizadas o ingresadas en UCI<a0> a lo largo del periodo de notificaci<f3>n(CL) (CM) (MD) (VC) y (MC)",
+      CCAA != "NOTA: El objetivo de los datos que se publican en esta web es saber el n<fa>mero de casos acumulados a la fecha y que por tanto no se puede deducir que la diferencia entre un d<ed>a y el anterior es el n<fa>mero de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un d<ed>a para otro deben hacerse con precauci<f3>n y son <fa>nicamente la responsabilidad el autor."
+    ) %>%
+    inner_join(ccaa, by="CCAA") %>% 
+    rename(
+      ccaa.codigo.iso    = CCAA,
+      obs_date           = FECHA,
+      confirmed          = CASOS,
+      hospitalized       = Hospitalizados,
+      uci                = UCI,
+      death              = Fallecidos,
+      recovered          = Recuperados,
+      ccaa.name          = CCAA.Name
     ) %>% 
-    group_by(
-      country,
-      obs_date
-    ) %>%
-    summarise(
-      confirmed             = sum(confirmed),
-      death                 = sum(death),
-      recovered             = sum(recovered)
-    ) %>%
-    mutate (
-      perc_exit              = (death * 100)/(death+recovered),
-      confirmedrecovered     = confirmed - recovered,
-      confirmed_estimated    = (death * 100) /  deathTax
+    mutate(
+      perc_exit           = (death * 100)/(death+recovered),
+      obs_date            = dmy(obs_date),
+      confirmedrecovered  = confirmed - recovered,
+      confirmed_estimated = (death * 100) /  deathTax
+      
     ) %>%
     return()
 }
 
 # Utils -------------------------------------------------------------------
 
-fnGetCountryList <- function (covid19,n_countries){
+fnGetCcaanamesList <- function (covid19,n_ccaa.names){
   
   covid19 %>%
     arrange(
@@ -74,20 +99,20 @@ fnGetCountryList <- function (covid19,n_countries){
       desc(confirmed)
     ) %>%
     head(
-      n_countries
+      n_ccaa.names
     ) %>%
     arrange(
-      country
-    )-> covid19_top_countries_confirmed
+      ccaa.name
+    )-> covid19_top_ccaa.names_confirmed
   
-  return (covid19_top_countries_confirmed$country)
+  return (covid19_top_ccaa.names_confirmed$ccaa.name)
 }
 
 # Plots -------------------------------------------------------------------
 
-fnPlotGlobal_confirmed <- function(covid19){
+fnPlotEsp_confirmed <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobal_confirmed.png"
+  filename = "./data/png/esp/covid19_esp_plotEsp_confirmed.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -102,7 +127,7 @@ fnPlotGlobal_confirmed <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Evolution for Covid-19  Script in R (confirmed)",
+      title   = "COVID- Spain Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -118,9 +143,9 @@ fnPlotGlobal_confirmed <- function(covid19){
     )
 }
 
-fnPlotGlobalDetail_confirmed <- function(covid19){
+fnPlotEspDetail_confirmed <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobalDetail_confirmed.png"
+  filename = "./data/png/esp/covid19_esp_plotEspDetail_confirmed.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -131,12 +156,12 @@ fnPlotGlobalDetail_confirmed <- function(covid19){
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed)) +
     geom_col() +
-    facet_wrap(~country, nrow=7) +
+    facet_wrap(~ccaa.name, nrow=7) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Detail Evolution for Covid-19  Script in R (confirmed)",
+      title   = "COVID- Spain Detail Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -152,28 +177,28 @@ fnPlotGlobalDetail_confirmed <- function(covid19){
   )
 }
 
-fnPlotGlobalCountyDetail_confirmed <- function(covid19, n_countries){
+fnPlotEspCcaanameDetail_confirmed <- function(covid19, n_ccaanames){
   
-  filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmed.png"
+  filename = "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmed.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      country %in% fnGetCountryList(covid19,n_countries)
+      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed)) +
     geom_col() +
-    facet_wrap(~country, nrow=2) +
+    facet_wrap(~ccaa.name, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmed)",
+      title   = "COVID- Spain Filter Most Confirmed CCAA.Names, Detail Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -189,9 +214,9 @@ fnPlotGlobalCountyDetail_confirmed <- function(covid19, n_countries){
   )
 }
 
-fnPlotGlobal_confirmedrecovered <- function(covid19){
+fnPlotEsp_confirmedrecovered <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobal_confirmedrecovered.png"
+  filename = "./data/png/esp/covid19_esp_plotEsp_confirmedrecovered.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -206,7 +231,7 @@ fnPlotGlobal_confirmedrecovered <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "COVID- Spain Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Condirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -222,9 +247,9 @@ fnPlotGlobal_confirmedrecovered <- function(covid19){
   )
 }
 
-fnPlotGlobalDetail_confirmedrecovered <- function(covid19){
+fnPlotEspDetail_confirmedrecovered <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobalDetail_confirmedrecovered.png"
+  filename = "./data/png/esp/covid19_esp_plotEspDetail_confirmedrecovered.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -235,12 +260,12 @@ fnPlotGlobalDetail_confirmedrecovered <- function(covid19){
     ) %>%
     ggplot(aes(x = obs_date, y=confirmedrecovered)) +
     geom_col() +
-    facet_wrap(~country, nrow=7) +
+    facet_wrap(~ccaa.name, nrow=7) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "COVID- Spain Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Confirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -256,28 +281,28 @@ fnPlotGlobalDetail_confirmedrecovered <- function(covid19){
   )
 }
 
-fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, n_countries){
+fnPlotEspCcaanameDetail_confirmedrecovered <- function(covid19, n_ccaanames){
   
-  filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmedrecovered.png"
+  filename = "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmedrecovered.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      country %in% fnGetCountryList(covid19,n_countries)
+      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmedrecovered)) +
     geom_col() +
-    facet_wrap(~country, nrow=2) +
+    facet_wrap(~ccaa.name, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "COVID- Spain Filter Most Confirmed CCAA.Names, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Condirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -293,9 +318,9 @@ fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, n_countries){
   )
 }
 
-fnPlotGlobal_confirmed_estimated <- function(covid19){
+fnPlotEsp_confirmed_estimated <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobal_confirmed_estimated.png"
+  filename = "./data/png/esp/covid19_esp_plotEsp_confirmed_estimated.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -310,7 +335,7 @@ fnPlotGlobal_confirmed_estimated <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Spain- Global Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -326,9 +351,9 @@ fnPlotGlobal_confirmed_estimated <- function(covid19){
   )
 }
 
-fnPlotGlobalDetail_confirmed_estimated <- function(covid19){
+fnPlotEspDetail_confirmed_estimated <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobalDetail_confirmed_estimated.png"
+  filename = "./data/png/esp/covid19_esp_plotEspDetail_confirmed_estimated.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -339,12 +364,12 @@ fnPlotGlobalDetail_confirmed_estimated <- function(covid19){
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed_estimated)) +
     geom_col() +
-    facet_wrap(~country, nrow=7) +
+    facet_wrap(~ccaa.name, nrow=7) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Spain Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -360,28 +385,28 @@ fnPlotGlobalDetail_confirmed_estimated <- function(covid19){
   )
 }
 
-fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, n_countries){
+fnPlotEspCcaanameDetail_confirmed_estimated <- function(covid19, n_ccaanames){
   
-  filename = "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmed_estimated.png"
+  filename = "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmed_estimated.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      country %in% fnGetCountryList(covid19,n_countries)
+      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed_estimated)) +
     geom_col() +
-    facet_wrap(~country, nrow=2) +
+    facet_wrap(~ccaa.name, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Spain Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -397,9 +422,9 @@ fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, n_countries){
   )
 }
 
-fnPlotGlobalLastdate <- function(covid19){
+fnPlotEspLastdate <- function(covid19){
   
-  filename = "./data/png/global/covid19_global_plotGlobalLastdate.png"
+  filename = "./data/png/esp/covid19_esp_plotEspLastdate.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -429,7 +454,7 @@ fnPlotGlobalLastdate <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Global Evolution for Covid-19  Script in R (Last Date)",
+      title   = "Spain Evolution for Covid-19  Script in R (Last Date)",
       x       = "Cases",
       y       = "Last Date",
       color   = "Data",
@@ -448,36 +473,36 @@ fnPlotGlobalLastdate <- function(covid19){
 
 # Main Function ---------------------------------------------------------
 
-fnMainGlobal <- function (path_wd, path_dataset,path_dataframe,deathTax,n_countries){
+fnMainEsp <- function (path_wd, path_dataset,path_dataframe,deathTax,n_ccaanames){
 
-  fnLoad_libraries_global()
+  fnLoad_libraries_esp()
   setwd(path_wd)
   
-  covid19_global <-fnImportData_global(path_dataset,deathTax)
+  covid19_esp <-fnImportData_esp(path_dataset,deathTax)
   
   if (file.exists(path_dataframe)) 
     file.remove(path_dataframe)
-  write_csv2(covid19_global,path = path_dataframe)
+  write_csv2(covid19_esp,path = path_dataframe)
   
   # Plots -------------------------------------
   
   # confirmed
-  fnPlotGlobal_confirmed(covid19_global)
-  fnPlotGlobalDetail_confirmed(covid19_global)
-  fnPlotGlobalCountyDetail_confirmed(covid19_global, n_countries)
+  fnPlotEsp_confirmed(covid19_esp)
+  fnPlotEspDetail_confirmed(covid19_esp)
+  fnPlotEspCcaanameDetail_confirmed(covid19_esp, n_ccaanames)
   
   # confirmedrecovered
-  fnPlotGlobal_confirmedrecovered(covid19_global)
-  fnPlotGlobalDetail_confirmedrecovered(covid19_global)
-  fnPlotGlobalCountyDetail_confirmedrecovered(covid19_global, n_countries)
+  fnPlotEsp_confirmedrecovered(covid19_esp)
+  fnPlotEspDetail_confirmedrecovered(covid19_esp)
+  fnPlotEspCcaanameDetail_confirmedrecovered(covid19_esp, n_ccaanames)
   
   # confirmed_estimated
-  fnPlotGlobal_confirmed_estimated(covid19_global)
-  fnPlotGlobalDetail_confirmed_estimated(covid19_global)
-  fnPlotGlobalCountyDetail_confirmed_estimated(covid19_global, n_countries)
+  fnPlotEsp_confirmed_estimated(covid19_esp)
+  fnPlotEspDetail_confirmed_estimated(covid19_esp)
+  fnPlotEspCcaanameDetail_confirmed_estimated(covid19_esp, n_ccaanames)
   
   # lastdate
-  fnPlotGlobalLastdate(covid19_global)
+  fnPlotEspLastdate(covid19_esp)
 
   return ("Execution OK")
 }
@@ -491,12 +516,12 @@ fnMainGlobal <- function (path_wd, path_dataset,path_dataframe,deathTax,n_countr
     path_dataset    : Path for dataset IN,
     path_dataframe  : Path for dataframe OUT,
     deathTax        : Death tax for Covid-19,
-    n_countries     : Number of countries who show in detail wrap
+    n_ccaanames     : Number of cca.names who show in detail wrap
 "
 
-fnMainGlobal("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
-       "./data/csv/global/covid19_global_dataset.csv",
-       "./data/csv/global/covid19_global_dataframe.csv",
+fnMainEsp("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
+       "./data/csv/esp/covid19_esp_dataset.csv",
+       "./data/csv/esp/covid19_esp_dataframe.csv",
        1.4,
        10
       )
