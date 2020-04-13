@@ -174,7 +174,7 @@ fnPlotGlobalCountyDetail_confirmed <- function(covid19, n_countries){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "Global Filter By Country, Detail Evolution for Covid-19  Script in R (confirmed)",
+      title   = "Global Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -278,7 +278,7 @@ fnPlotGlobalCountyDetail_confirmedrecovered <- function(covid19, n_countries){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "Global Filter By Country, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "Global Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Condirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -382,7 +382,7 @@ fnPlotGlobalCountyDetail_confirmed_estimated <- function(covid19, n_countries){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "Global Filter By Country, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "Global Filter Most Confirmed Countries, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -413,7 +413,7 @@ fnPlotGlobalLastdate <- function(covid19){
       !is.na(confirmed),
       !is.na(confirmed_estimated),
       !is.na(recovered),
-      !is.na(death),
+      !is.na(death)
     ) %>% 
     head(
       1              # Nos quedamos con la última
