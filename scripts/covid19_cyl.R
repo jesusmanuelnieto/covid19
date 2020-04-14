@@ -1,5 +1,5 @@
 "
-  @script:      covid19_esp
+  @script:      covid19_cyl
   @autor:       Jesús Manuel Nieto Carracedo
   @email1:      jesusmanuel.nieto@etani.es
   @email2:      jesusmanuel.nieto@gmail.com
@@ -7,80 +7,62 @@
   @linkedin:    https://es.linkedin.com/in/jes%C3%BAs-manuel-nieto-carracedo-77128424
   @github:      https://github.com/jesusmanuelnieto
   @description: Script para la manipulación y generación de varías gráficas sobre la evolución del
-  virus COVID-19 a nivel del Reino de España.
+  virus COVID-19 a nivel de la comunidad de Castilla & León en el Reino de cylaña.
 
   @repository:  https://github.com/jesusmanuelnieto/covid19.git
   @sources:
   {
-    @data:         https://covid19.isciii.es/,
+    @data:         https://analisis.datosabiertos.jcyl.es/pages/coronavirus/descarga-de-datasets#descargas,
+    @dataset1      https://analisis.datosabiertos.jcyl.es/explore/dataset/situacion-de-hospitalizados-por-coronavirus-en-castilla-y-leon/download/?format=csv&timezone=Europe/Madrid&lang=es&use_labels_for_header=true&csv_separator=%3B,
+    @dataset2      https://analisis.datosabiertos.jcyl.es/explore/dataset/situacion-epidemiologica-coronavirus-en-castilla-y-leon/download/?format=csv&timezone=Europe/Madrid&lang=es&use_labels_for_header=true&csv_separator=%3B
     @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
   }
 "
 
 # Libraries ---------------------------------------------------------------
 
-fnLoad_libraries_esp <- function(){
+fnLoad_libraries_cyl <- function(){
   library(tidyverse)
-  library(lubridate)
 }
 
 # Import Data -------------------------------------------------------------
 
-fnImportData_esp <- function (path_dataset,deathTax) {
+fnImportData_cyl <- function (path_dataset,deathTax) {
   
-  # Tribble con los nombres de las comunidades autónomas
-  tribble(
-    ~CCAA             , ~CCAA.Name,
-    "AN"              , "Andalucia",
-    "AR"              , "Aragón",
-    "AS"              , "Asturias",
-    "CB"              , "Cantabria",
-    "CE"              , "Ceuta",
-    "CL"              , "Castilla y León",
-    "CM"              , "Castilla la Mancha",
-    "CN"              , "Canarias",
-    "CT"              , "Cataluña",
-    "EX"              , "Extremadura",
-    "GA"              , "Galicia",
-    "IB"              , "Islas Baleares",
-    "MC"              , "Murcia",
-    "MD"              , "Madrid",
-    "ME"              , "Melilla",
-    "NC"              , "Navarra",
-    "PV"              , "País Vasco",
-    "RI"              , "La Rioja",
-    "VC"              , "Valencia"
-  ) -> ccaa
-  
-  read.csv(path_dataset) %>%
-    filter(
-      CCAA != "Los datos de estas comunidades son datos de prevalencia (personas ingresadas a fecha de hoy). No reflejan el total de personas que han sido hospitalizadas o ingresadas en UCI<a0> a lo largo del periodo de notificaci<f3>n(CL) (CM) (MD) (VC) y (MC)",
-      CCAA != "NOTA: El objetivo de los datos que se publican en esta web es saber el n<fa>mero de casos acumulados a la fecha y que por tanto no se puede deducir que la diferencia entre un d<ed>a y el anterior es el n<fa>mero de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un d<ed>a para otro deben hacerse con precauci<f3>n y son <fa>nicamente la responsabilidad el autor."
+  read.csv(path_dataset[1], sep =";") %>%
+    group_by(
+      fecha,
+      provincia
     ) %>%
-    inner_join(ccaa, by="CCAA") %>% 
-    rename(
-      ccaa.codigo.iso    = CCAA,
-      obs_date           = FECHA,
-      confirmed          = CASOS,
-      hospitalized       = Hospitalizados,
-      uci                = UCI,
-      death              = Fallecidos,
-      recovered          = Recuperados,
-      ccaa.name          = CCAA.Name
-    ) %>% 
-    mutate(
+    summarise(
+      hospitalizados_planta  = sum(hospitalizados_planta),
+      hospitalizados_uci     = sum(hospitalizados_uci),
+      hospitalizados_altas   = sum(altas),
+      hospitalizados_muertos = sum(fallecimientos)
+    ) %>%
+    inner_join(read.csv(path_dataset[2], sep = ";"),by = c("fecha","provincia")) %>%
+    rename (
+      obs_date           = fecha,
+      confirmed          = casos_confirmados,
+      confirmed_new      = nuevos_positivos,
+      hospitalized       = hospitalizados_planta,
+      uci                = hospitalizados_uci,
+      death              = hospitalizados_muertos,
+      recovered          = hospitalizados_altas,
+      name               = provincia
+    ) %>%
+    mutate (
       perc_exit           = (death * 100)/(death+recovered),
-      obs_date            = dmy(obs_date),
       confirmedrecovered  = confirmed - recovered,
       confirmed_estimated = (death * 100) /  deathTax
-      
     ) %>%
     return()
+  
 }
 
 # Utils -------------------------------------------------------------------
 
-fnGetCcaanamesList <- function (covid19,n_ccaa.names){
+fnGetNamesList <- function (covid19,n_names){
   
   covid19 %>%
     arrange(
@@ -99,20 +81,20 @@ fnGetCcaanamesList <- function (covid19,n_ccaa.names){
       desc(confirmed)
     ) %>%
     head(
-      n_ccaa.names
+      n_names
     ) %>%
     arrange(
-      ccaa.name
-    )-> covid19_top_ccaa.names_confirmed
+      name
+    )-> covid19_top_names_confirmed
   
-  return (covid19_top_ccaa.names_confirmed$ccaa.name)
+  return (covid19_top_names_confirmed$name)
 }
 
 # Plots -------------------------------------------------------------------
 
-fnPlotEsp_confirmed <- function(covid19){
+fnPlotcyl_confirmed <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEsp_confirmed.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcyl_confirmed.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -127,7 +109,7 @@ fnPlotEsp_confirmed <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Evolution for Covid-19  Script in R (confirmed)",
+      title   = "COVID- Castilla & León Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -143,9 +125,9 @@ fnPlotEsp_confirmed <- function(covid19){
     )
 }
 
-fnPlotEspDetail_confirmed <- function(covid19){
+fnPlotcylDetail_confirmed <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEspDetail_confirmed.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylDetail_confirmed.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -156,12 +138,12 @@ fnPlotEspDetail_confirmed <- function(covid19){
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed)) +
     geom_col() +
-    facet_wrap(~ccaa.name, nrow=7) +
+    facet_wrap(~name, nrow=7) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Detail Evolution for Covid-19  Script in R (confirmed)",
+      title   = "COVID- Castilla & León Detail Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -177,28 +159,28 @@ fnPlotEspDetail_confirmed <- function(covid19){
   )
 }
 
-fnPlotEspCcaanameDetail_confirmed <- function(covid19, n_ccaanames){
+fnPlotcylCcaanameDetail_confirmed <- function(covid19, n_names){
   
-  filename = "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmed.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmed.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
+      name %in% fnGetNamesList(covid19,n_names)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed)) +
     geom_col() +
-    facet_wrap(~ccaa.name, nrow=2) +
+    facet_wrap(~name, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Filter Most Confirmed CCAA.Names, Detail Evolution for Covid-19  Script in R (confirmed)",
+      title   = "COVID- Castilla & León Filter Most Confirmed Names, Detail Evolution for Covid-19  Script in R (confirmed)",
       x       = "Date",
       y       = "Condirmed",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -214,9 +196,9 @@ fnPlotEspCcaanameDetail_confirmed <- function(covid19, n_ccaanames){
   )
 }
 
-fnPlotEsp_confirmedrecovered <- function(covid19){
+fnPlotcyl_confirmedrecovered <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEsp_confirmedrecovered.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcyl_confirmedrecovered.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -231,7 +213,7 @@ fnPlotEsp_confirmedrecovered <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "COVID- Castilla & León Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Condirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -247,9 +229,9 @@ fnPlotEsp_confirmedrecovered <- function(covid19){
   )
 }
 
-fnPlotEspDetail_confirmedrecovered <- function(covid19){
+fnPlotcylDetail_confirmedrecovered <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEspDetail_confirmedrecovered.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylDetail_confirmedrecovered.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -260,12 +242,12 @@ fnPlotEspDetail_confirmedrecovered <- function(covid19){
     ) %>%
     ggplot(aes(x = obs_date, y=confirmedrecovered)) +
     geom_col() +
-    facet_wrap(~ccaa.name, nrow=7) +
+    facet_wrap(~name, nrow=7) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "COVID- Castilla & León Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Confirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -281,28 +263,28 @@ fnPlotEspDetail_confirmedrecovered <- function(covid19){
   )
 }
 
-fnPlotEspCcaanameDetail_confirmedrecovered <- function(covid19, n_ccaanames){
+fnPlotcylCcaanameDetail_confirmedrecovered <- function(covid19, n_names){
   
-  filename = "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmedrecovered.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmedrecovered.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
+      name %in% fnGetNamesList(covid19,n_names)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmedrecovered)) +
     geom_col() +
-    facet_wrap(~ccaa.name, nrow=2) +
+    facet_wrap(~name, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Filter Most Confirmed CCAA.Names, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
+      title   = "COVID- Castilla & León Filter Most Confirmed Names, Detail Evolution for Covid-19  Script in R (confirmedrecovered)",
       x       = "Date",
       y       = "Condirmedrecovered",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -318,9 +300,9 @@ fnPlotEspCcaanameDetail_confirmedrecovered <- function(covid19, n_ccaanames){
   )
 }
 
-fnPlotEsp_confirmed_estimated <- function(covid19){
+fnPlotcyl_confirmed_estimated <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEsp_confirmed_estimated.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcyl_confirmed_estimated.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -335,7 +317,7 @@ fnPlotEsp_confirmed_estimated <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain- Global Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Castilla & León- Global Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -351,9 +333,9 @@ fnPlotEsp_confirmed_estimated <- function(covid19){
   )
 }
 
-fnPlotEspDetail_confirmed_estimated <- function(covid19){
+fnPlotcylDetail_confirmed_estimated <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEspDetail_confirmed_estimated.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylDetail_confirmed_estimated.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -364,12 +346,12 @@ fnPlotEspDetail_confirmed_estimated <- function(covid19){
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed_estimated)) +
     geom_col() +
-    facet_wrap(~ccaa.name, nrow=7) +
+    facet_wrap(~name, nrow=7) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Castilla & León Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -385,28 +367,28 @@ fnPlotEspDetail_confirmed_estimated <- function(covid19){
   )
 }
 
-fnPlotEspCcaanameDetail_confirmed_estimated <- function(covid19, n_ccaanames){
+fnPlotcylCcaanameDetail_confirmed_estimated <- function(covid19, n_names){
   
-  filename = "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmed_estimated.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmed_estimated.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
+      name %in% fnGetNamesList(covid19,n_names)
     ) %>%
     arrange(
       obs_date
     ) %>%
     ggplot(aes(x = obs_date, y=confirmed_estimated)) +
     geom_col() +
-    facet_wrap(~ccaa.name, nrow=2) +
+    facet_wrap(~name, nrow=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Filter Most Confirmed CCAA.Names, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
+      title   = "COVID- Castilla & León Filter Most Confirmed Names, Detail Evolution for Covid-19  Script in R (confirmed_estimated)",
       x       = "Date",
       y       = "Condirmed_Estimated",
       caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
@@ -422,9 +404,9 @@ fnPlotEspCcaanameDetail_confirmed_estimated <- function(covid19, n_ccaanames){
   )
 }
 
-fnPlotEspLastdate <- function(covid19){
+fnPlotcylLastdate <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEspLastdate.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylLastdate.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -435,11 +417,12 @@ fnPlotEspLastdate <- function(covid19){
     ) %>%
     filter (
       !is.na(confirmed),
+      !is.na(confirmed_new),
       !is.na(confirmed_estimated),
       !is.na(recovered),
       !is.na(death),
       !is.na(uci),
-      !is.na(hospitalized),
+      !is.na(hospitalized)
     ) %>% 
     head(
       1              # Nos quedamos con la última
@@ -447,7 +430,7 @@ fnPlotEspLastdate <- function(covid19){
     gather(
       "type_cases",
       "cases",
-      3:7
+      3:8
     )%>%
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
@@ -456,7 +439,7 @@ fnPlotEspLastdate <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "Spain Evolution for Covid-19  Script in R (Last Date)",
+      title   = "Castilla & León Evolution for Covid-19  Script in R (Last Date)",
       x       = "Cases",
       y       = "Last Date",
       color   = "Data",
@@ -473,9 +456,9 @@ fnPlotEspLastdate <- function(covid19){
   )
 }
 
-fnPlotEsp_lines <- function(covid19){
+fnPlotcyl_lines <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEsp_lines.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcyl_lines.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -489,6 +472,7 @@ fnPlotEsp_lines <- function(covid19){
     ) %>%
     filter (
       !is.na(confirmed),
+      !is.na(confirmed_new),
       !is.na(uci),
       !is.na(recovered),
       !is.na(hospitalized),
@@ -496,17 +480,19 @@ fnPlotEsp_lines <- function(covid19){
     ) %>%
     summarise(
       confirmed      = sum(confirmed),
+      confirmed_new  = sum(confirmed_new),
       uci            = sum(uci),
       recovered      = sum(recovered),
       hospitalized   = sum(hospitalized),
       death          = sum(death)
     )%>%
-    ggplot(aes(x = obs_date)) +
+    ggplot(aes(x = obs_date, group = 1)) +
     geom_line(aes(y = confirmed)     ,  color = "black")   +
     geom_line(aes(y = uci)           ,  color = "yellow")  +
     geom_line(aes(y = recovered)     ,  color = "green")   +
     geom_line(aes(y = hospitalized)  ,  color = "blue")    +
     geom_line(aes(y = death)         ,  color = "red")     +
+    geom_line(aes(y = confirmed_new) ,  color = "orange")  +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
@@ -515,7 +501,7 @@ fnPlotEsp_lines <- function(covid19){
       x       = "Cases",
       y       = "Date",
       color   = "Data",
-      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+      caption = "INFO: confirmed (Black), new_confirmed(Orange), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -528,9 +514,9 @@ fnPlotEsp_lines <- function(covid19){
   )
 }
 
-fnPlotEspDetail_lines <- function(covid19){
+fnPlotcylDetail_lines <- function(covid19){
   
-  filename = "./data/png/esp/covid19_esp_plotEspDetail_lines.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylDetail_lines.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -541,18 +527,20 @@ fnPlotEspDetail_lines <- function(covid19){
     ) %>%
     filter (
       !is.na(confirmed),
+      !is.na(confirmed_new),
       !is.na(uci),
       !is.na(recovered),
       !is.na(hospitalized),
       !is.na(death)
     ) %>%
-    ggplot(aes(x = obs_date)) +
+    ggplot(aes(x = obs_date, group = 1)) +
     geom_line(aes(y = confirmed)     ,  color = "black")   +
+    geom_line(aes(y = confirmed_new) ,  color = "orange")  +
     geom_line(aes(y = uci)           ,  color = "yellow")  +
     geom_line(aes(y = recovered)     ,  color = "green")   +
     geom_line(aes(y = hospitalized)  ,  color = "blue")    +
     geom_line(aes(y = death)         ,  color = "red")     +
-    facet_wrap(~ccaa.name, nrow=6)  +
+    facet_wrap(~name, nrow=6)  +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
@@ -561,7 +549,7 @@ fnPlotEspDetail_lines <- function(covid19){
       x       = "Cases",
       y       = "Date",
       color   = "Data",
-      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+      caption = "INFO: confirmed (Black), new_confirmed(Orange), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -574,43 +562,45 @@ fnPlotEspDetail_lines <- function(covid19){
   )
 }
 
-fnPlotEspCcaanameDetail_lines <- function(covid19, n_ccaanames){
+fnPlotcylCcaanameDetail_lines <- function(covid19, n_names){
   
-  filename = "./data/png/esp/covid19_esp_plotEspCcaanameDetail_lines.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylCcaanameDetail_lines.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
   
   covid19 %>%
     filter(
-      ccaa.name %in% fnGetCcaanamesList(covid19,n_ccaanames)
+      name %in% fnGetNamesList(covid19,n_names)
     )  %>% 
     arrange(
       obs_date
     ) %>%
     filter (
       !is.na(confirmed),
+      !is.na(confirmed_new),
       !is.na(uci),
       !is.na(recovered),
       !is.na(hospitalized),
       !is.na(death)
     ) %>%
-    ggplot(aes(x = obs_date)) +
+    ggplot(aes(x = obs_date, group = 1)) +
     geom_line(aes(y = confirmed)     ,  color = "black")   +
+    geom_line(aes(y = confirmed_new) ,  color = "orange")  +
     geom_line(aes(y = uci)           ,  color = "yellow")  +
     geom_line(aes(y = recovered)     ,  color = "green")   +
     geom_line(aes(y = hospitalized)  ,  color = "blue")    +
     geom_line(aes(y = death)         ,  color = "red")     +
-    facet_wrap(~ccaa.name, nrow=4)  +
+    facet_wrap(~name, nrow=4)  +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID- Spain Filter Most Confirmed CCAA,Names, Detail Evolution for Covid-19  Script in R",
+      title   = "COVID- Castilla & León Filter Most Confirmed CCAA,Names, Detail Evolution for Covid-19  Script in R",
       x       = "Cases",
       y       = "Date",
       color   = "Data",
-      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+      caption = "INFO: confirmed (Black), new_confirmed(Orange), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -625,41 +615,41 @@ fnPlotEspCcaanameDetail_lines <- function(covid19, n_ccaanames){
 
 # Main Function ---------------------------------------------------------
 
-fnMainEsp <- function (path_wd, path_dataset,path_dataframe,deathTax,n_ccaanames){
+fnMaincyl <- function (path_wd, path_dataset,path_dataframe,deathTax,n_names){
 
-  fnLoad_libraries_esp()
+  fnLoad_libraries_cyl()
   setwd(path_wd)
   
-  covid19_esp <-fnImportData_esp(path_dataset,deathTax)
+  covid19_cyl <-fnImportData_cyl(path_dataset,deathTax)
   
   if (file.exists(path_dataframe)) 
     file.remove(path_dataframe)
-  write_csv2(covid19_esp,path = path_dataframe)
+  write_csv2(covid19_cyl,path = path_dataframe)
   
   # Plots -------------------------------------
   
   # confirmed
-  fnPlotEsp_confirmed(covid19_esp)
-  fnPlotEspDetail_confirmed(covid19_esp)
-  fnPlotEspCcaanameDetail_confirmed(covid19_esp, n_ccaanames)
+  fnPlotcyl_confirmed(covid19_cyl)
+  fnPlotcylDetail_confirmed(covid19_cyl)
+  fnPlotcylCcaanameDetail_confirmed(covid19_cyl, n_names)
   
   # confirmedrecovered
-  fnPlotEsp_confirmedrecovered(covid19_esp)
-  fnPlotEspDetail_confirmedrecovered(covid19_esp)
-  fnPlotEspCcaanameDetail_confirmedrecovered(covid19_esp, n_ccaanames)
+  fnPlotcyl_confirmedrecovered(covid19_cyl)
+  fnPlotcylDetail_confirmedrecovered(covid19_cyl)
+  fnPlotcylCcaanameDetail_confirmedrecovered(covid19_cyl, n_names)
   
   # confirmed_estimated
-  fnPlotEsp_confirmed_estimated(covid19_esp)
-  fnPlotEspDetail_confirmed_estimated(covid19_esp)
-  fnPlotEspCcaanameDetail_confirmed_estimated(covid19_esp, n_ccaanames)
+  fnPlotcyl_confirmed_estimated(covid19_cyl)
+  fnPlotcylDetail_confirmed_estimated(covid19_cyl)
+  fnPlotcylCcaanameDetail_confirmed_estimated(covid19_cyl, n_names)
   
   # lastdate
-  fnPlotEspLastdate(covid19_esp)
-
+  fnPlotcylLastdate(covid19_cyl)
+  
   # lines
-  fnPlotEsp_lines(covid19_esp)
-  fnPlotEspDetail_lines(covid19_esp)
-  fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
+  fnPlotcyl_lines(covid19_cyl)
+  fnPlotcylDetail_lines(covid19_cyl)
+  fnPlotcylCcaanameDetail_lines(covid19_cyl, n_names)
   
   return ("Execution OK")
 }
@@ -670,15 +660,15 @@ fnMainEsp <- function (path_wd, path_dataset,path_dataframe,deathTax,n_ccaanames
 "
   fnMain:
     path_wd         : Path working directory,
-    path_dataset    : Path for dataset IN,
+    path_dataset    : Paths for dataset IN,
     path_dataframe  : Path for dataframe OUT,
     deathTax        : Death tax for Covid-19,
-    n_ccaanames     : Number of cca.names who show in detail wrap
+    n_names         : Number of cca.names who show in detail wrap
 "
 
-fnMainEsp("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
-       "./data/csv/esp/covid19_esp_dataset.csv",
-       "./data/csv/esp/covid19_esp_dataframe.csv",
+fnMaincyl("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
+       c("./data/csv/cyl/covid19_cyl_dataset1.csv","./data/csv/cyl/covid19_cyl_dataset2.csv"),
+       "./data/csv/cyl/covid19_cyl_dataframe.csv",
        1.4,
-       10
+       4
       )
