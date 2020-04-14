@@ -159,7 +159,7 @@ fnPlotcylDetail_confirmed <- function(covid19){
   )
 }
 
-fnPlotcylCcaanameDetail_confirmed <- function(covid19, n_names){
+fnPlotcylNameDetail_confirmed <- function(covid19, n_names){
   
   filename = "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmed.png"
   
@@ -263,7 +263,7 @@ fnPlotcylDetail_confirmedrecovered <- function(covid19){
   )
 }
 
-fnPlotcylCcaanameDetail_confirmedrecovered <- function(covid19, n_names){
+fnPlotcylNameDetail_confirmedrecovered <- function(covid19, n_names){
   
   filename = "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmedrecovered.png"
   
@@ -367,7 +367,7 @@ fnPlotcylDetail_confirmed_estimated <- function(covid19){
   )
 }
 
-fnPlotcylCcaanameDetail_confirmed_estimated <- function(covid19, n_names){
+fnPlotcylNameDetail_confirmed_estimated <- function(covid19, n_names){
   
   filename = "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmed_estimated.png"
   
@@ -440,6 +440,59 @@ fnPlotcylLastdate <- function(covid19){
     )+
     labs(
       title   = "Castilla & León Evolution for Covid-19  Script in R (Last Date)",
+      x       = "Cases",
+      y       = "Last Date",
+      color   = "Data",
+      caption = "INFO: Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+    )
+  
+  ggsave(
+    filename = filename,
+    device   = "png",
+    # 1920x1080 conversion pixel to cm
+    width    = 50.8,  
+    height   = 28.575,
+    units    = "cm"
+  )
+}
+
+fnPlotcylSalamancaLastdate <- function(covid19){
+  
+  filename = "./data/png/cyl/covid19_cyl_plotcylSalamancaLastdate.png"
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  covid19 %>% 
+    arrange(
+      desc(obs_date)
+    ) %>%
+    filter (
+      !is.na(confirmed),
+      !is.na(confirmed_new),
+      !is.na(confirmed_estimated),
+      !is.na(recovered),
+      !is.na(death),
+      !is.na(uci),
+      !is.na(hospitalized),
+      name == 'Salamanca'
+    ) %>% 
+    head(
+      1              # Nos quedamos con la última
+    ) %>%
+    gather(
+      "type_cases",
+      "cases",
+      3:8
+    )%>%
+    ggplot() +
+    geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
+    coord_polar() +
+    theme(
+      plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
+    )+
+    labs(
+      title   = "Salamanca Evolution for Covid-19  Script in R (Last Date)",
       x       = "Cases",
       y       = "Last Date",
       color   = "Data",
@@ -562,9 +615,9 @@ fnPlotcylDetail_lines <- function(covid19){
   )
 }
 
-fnPlotcylCcaanameDetail_lines <- function(covid19, n_names){
+fnPlotcylNameDetail_lines <- function(covid19, n_names){
   
-  filename = "./data/png/cyl/covid19_cyl_plotcylCcaanameDetail_lines.png"
+  filename = "./data/png/cyl/covid19_cyl_plotcylNameDetail_lines.png"
   
   if (file.exists(filename)) 
     file.remove(filename)
@@ -631,25 +684,26 @@ fnMaincyl <- function (path_wd, path_dataset,path_dataframe,deathTax,n_names){
   # confirmed
   fnPlotcyl_confirmed(covid19_cyl)
   fnPlotcylDetail_confirmed(covid19_cyl)
-  fnPlotcylCcaanameDetail_confirmed(covid19_cyl, n_names)
+  fnPlotcylNameDetail_confirmed(covid19_cyl, n_names)
   
   # confirmedrecovered
   fnPlotcyl_confirmedrecovered(covid19_cyl)
   fnPlotcylDetail_confirmedrecovered(covid19_cyl)
-  fnPlotcylCcaanameDetail_confirmedrecovered(covid19_cyl, n_names)
+  fnPlotcylNameDetail_confirmedrecovered(covid19_cyl, n_names)
   
   # confirmed_estimated
   fnPlotcyl_confirmed_estimated(covid19_cyl)
   fnPlotcylDetail_confirmed_estimated(covid19_cyl)
-  fnPlotcylCcaanameDetail_confirmed_estimated(covid19_cyl, n_names)
+  fnPlotcylNameDetail_confirmed_estimated(covid19_cyl, n_names)
   
   # lastdate
   fnPlotcylLastdate(covid19_cyl)
+  fnPlotcylSalamancaLastdate(covid19_cyl)
   
   # lines
   fnPlotcyl_lines(covid19_cyl)
   fnPlotcylDetail_lines(covid19_cyl)
-  fnPlotcylCcaanameDetail_lines(covid19_cyl, n_names)
+  fnPlotcylNameDetail_lines(covid19_cyl, n_names)
   
   return ("Execution OK")
 }
