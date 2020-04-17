@@ -1006,8 +1006,64 @@ MC,12/4/2020,1463,543,94,101,353
 NC,12/4/2020,4092,1693,124,239,695
 PV,12/4/2020,11018,5622,464,831,5026
 RI,12/4/2020,3358,1141,73,223,1458
-,,,,,,
-NOTA: El objetivo de los datos que se publican en esta web es saber el número de casos acumulados a la fecha y por tanto no se puede deducir que la diferencia entre un día y el anterior es el número de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un día para otro debe hacerse con precaución y es únicamente la responsabilidad el autor.,,,,,,
-Los datos de estas comunidades son datos de prevalencia (personas ingresadas a fecha de hoy). No reflejan el total de personas que han sido hospitalizadas o ingresadas en UCI  a lo largo del periodo de notificación (CL(UCIs)-GA(UCIS)-CM*-MD),,,,,,
-* Desde el día 11/04/2020 las cifras de hospitalizados de CM son casos acumulados. Previamente se refieren a personas ingresadas ese día.,,,,,,
-* Desde el día 12/04/2020 las cifras de UCI de CM son casos acumulados. Previamente se refieren a personas ingresadas ese día.
+AN,13/4/2020,10306,5054,631,836,2032
+AR,13/4/2020,4245,1966,280,492,963
+AS,13/4/2020,2051,1330,111,156,458
+IB,13/4/2020,1571,826,145,118,871
+CN,13/4/2020,1958,771,147,102,589
+CB,13/4/2020,1796,853,76,120,323
+CM,13/4/2020,14329,7830,486,1714,2943
+CL,13/4/2020,13180,6175,308,1299,4266
+CT,13/4/2020,35197,23126,2775,3666,15967
+CE,13/4/2020,96,9,4,4,22
+VC,13/4/2020,9213,4397,581,907,3069
+EX,13/4/2020,2684,1114,108,334,578
+GA,13/4/2020,7597,2403,133,290,1240
+MD,13/4/2020,48048,10753,1299,6568,26247
+ML,13/4/2020,101,43,3,2,18
+MC,13/4/2020,1487,566,96,106,476
+NC,13/4/2020,4150,1705,124,249,730
+PV,13/4/2020,11226,5679,470,859,5193
+RI,13/4/2020,3420,1152,74,234,1519
+AN,14/4/2020,10595,5147,665,865,2224
+AR,14/4/2020,4338,2006,282,514,1012
+AS,14/4/2020,2096,1387,114,166,487
+IB,14/4/2020,1606,857,149,125,881
+CN,14/4/2020,1975,781,152,104,622
+CB,14/4/2020,1823,873,76,132,363
+CM,14/4/2020,14680,7896,495,1755,2998
+CL,14/4/2020,13697,6306,306,1337,4521
+CT,14/4/2020,36505,23372,2789,3756,16651
+CE,14/4/2020,98,9,4,4,30
+VC,14/4/2020,9424,4465,588,945,3360
+EX,14/4/2020,2762,1155,109,342,615
+GA,14/4/2020,7708,2471,128,299,1298
+MD,14/4/2020,49526,10116,1244,6724,27433
+ML,14/4/2020,102,43,3,2,24
+MC,14/4/2020,1520,574,97,109,513
+NC,14/4/2020,4246,1731,124,252,808
+PV,14/4/2020,11475,5750,471,902,5428
+RI,14/4/2020,3457,1182,75,246,1585
+AN,15/4/2020,10807,5226,671,912,2634
+AR,15/4/2020,4566,2108,291,543,1087
+AS,15/4/2020,2170,1432,116,168,522
+IB,15/4/2020,1637,872,152,131,918
+CN,15/4/2020,1988,802,156,107,673
+CB,15/4/2020,1845,890,77,137,442
+CM,15/4/2020,15151,7987,503,1796,3378
+CL,15/4/2020,14380,6449,307,1372,4725
+CT,15/4/2020,37354,23680,2798,3855,17297
+CE,15/4/2020,100,9,4,4,41
+VC,15/4/2020,9615,4524,625,972,3702
+EX,15/4/2020,2881,1186,110,359,649
+GA,15/4/2020,7873,2494,123,310,1383
+MD,15/4/2020,50694,9653,1206,6877,28491
+ML,15/4/2020,103,43,3,2,27
+MC,15/4/2020,1598,575,97,111,516
+NC,15/4/2020,4348,1752,124,261,845
+PV,15/4/2020,11790,5863,478,956,5813
+RI,15/4/2020,3916,1207,75,257,1654
+NOTA: El objetivo de los datos que se publican en esta web es saber el número de casos acumulados a la fecha y que por tanto no se puede deducir que la diferencia entre un día y el anterior es el número de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un día para otro deben hacerse con precaución y son únicamente la responsabilidad el autor.
+Los datos de estas comunidades son datos de prevalencia (personas ingresadas a fecha de hoy). No reflejan el total de personas que han sido hospitalizadas o ingresadas en UCI  a lo largo del periodo de notificación(CL(UCIs)-GA(UCIS)-CM*-MD)
+* Desde el día 11/04/2020 las cifras de hospitalizados de CM son casos acumulados. Previamente se refieren a personas ingresadas ese día.
+* Desde el día 12/04/2020 las cifras de UCIs de CM son casos acumulados. Previamente se refieren a personas ingresadas ese día.

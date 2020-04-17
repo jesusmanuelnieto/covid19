@@ -550,7 +550,7 @@ fnPlotcyl_lines <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID-19 Spanish Evo General Lines for Covid-19  Script in R",
+      title   = "COVID-19 Castilla & León Evo General Lines for Covid-19  Script in R",
       x       = "Cases",
       y       = "Date",
       color   = "Data",
@@ -598,7 +598,7 @@ fnPlotcylDetail_lines <- function(covid19){
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
     labs(
-      title   = "COVID-19 Spanish Evo General Detail Lines for Covid-19  Script in R",
+      title   = "COVID-19 Castilla & León Evo General Detail Lines for Covid-19  Script in R",
       x       = "Cases",
       y       = "Date",
       color   = "Data",
