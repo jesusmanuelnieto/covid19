@@ -13,6 +13,7 @@
   @sources:
   {
     @data:         https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset#covid_19_data.csv,
+    @dataZip:      https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset/download,
     @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
   }
 "
