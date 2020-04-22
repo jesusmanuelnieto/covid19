@@ -13,6 +13,7 @@
   @sources:
   {
     @data:         https://covid19.isciii.es/,
+    @dataframe:    https://covid19.isciii.es/resources/serie_historica_acumulados.csv,
     @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
   }
 "
@@ -26,7 +27,7 @@ fnLoad_libraries_esp <- function(){
 
 # Import Data -------------------------------------------------------------
 
-fnImportData_esp <- function (path_dataset,deathTax) {
+fnImportData_esp <- function (url_dataset,deathTax) {
   
   # Tribble con los nombres de las comunidades autónomas
   tribble(
@@ -52,7 +53,7 @@ fnImportData_esp <- function (path_dataset,deathTax) {
     "VC"              , "Valencia"
   ) -> ccaa
   
-  read.csv(path_dataset) %>%
+  read.csv(url_dataset) %>%
     filter(
       CCAA != "Los datos de estas comunidades son datos de prevalencia (personas ingresadas a fecha de hoy). No reflejan el total de personas que han sido hospitalizadas o ingresadas en UCI<a0> a lo largo del periodo de notificaci<f3>n(CL) (CM) (MD) (VC) y (MC)",
       CCAA != "NOTA: El objetivo de los datos que se publican en esta web es saber el n<fa>mero de casos acumulados a la fecha y que por tanto no se puede deducir que la diferencia entre un d<ed>a y el anterior es el n<fa>mero de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un d<ed>a para otro deben hacerse con precauci<f3>n y son <fa>nicamente la responsabilidad el autor."
@@ -625,12 +626,35 @@ fnPlotEspCcaanameDetail_lines <- function(covid19, n_ccaanames){
 
 # Main Function ---------------------------------------------------------
 
-fnMainEsp <- function (path_wd, path_dataset,path_dataframe,deathTax,n_ccaanames){
+fnMainEsp <- function (config){
 
+  "
+  config:
+
+  path_wd          -> Path to working directory
+  url_dataset      -> Url to access a input dataset
+  path_dataset     -> Path to dataset input dataset
+  path_dataframe   -> Path to dataframe output dataset
+  deathTax         -> Covid-19 death tax
+  n_ccaanames      -> Top N for ccaa.
+  
+  "
+  
+  path_wd          = as.character(config$path_wd[1])
+  url_dataset      = as.character(config$url_dataset[1])
+  path_dataset     = as.character(config$path_dataset[1])
+  path_dataframe   = as.character(config$path_dataframe[1])
+  deathTax         = as.double(config$deathTax[1])
+  n_ccaanames      = as.integer(config$n_ccaanames[1])
+  
   fnLoad_libraries_esp()
   setwd(path_wd)
   
-  covid19_esp <-fnImportData_esp(path_dataset,deathTax)
+  covid19_esp <-fnImportData_esp(url_dataset,deathTax)
+  
+  if (file.exists(path_dataset)) 
+    file.remove(path_dataset)
+  write_csv2(read.csv(url_dataset),path = path_dataset)
   
   if (file.exists(path_dataframe)) 
     file.remove(path_dataframe)
@@ -667,18 +691,4 @@ fnMainEsp <- function (path_wd, path_dataset,path_dataframe,deathTax,n_ccaanames
 
 # Main --------------------------------------------------------------------
 
-"
-  fnMain:
-    path_wd         : Path working directory,
-    path_dataset    : Path for dataset IN,
-    path_dataframe  : Path for dataframe OUT,
-    deathTax        : Death tax for Covid-19,
-    n_ccaanames     : Number of cca.names who show in detail wrap
-"
-
-fnMainEsp("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
-       "./data/csv/esp/covid19_esp_dataset.csv",
-       "./data/csv/esp/covid19_esp_dataframe.csv",
-       1.4,
-       10
-      )
+fnMainEsp(read.csv("./data/csv/esp/covid19_esp_config.csv", sep =";"))

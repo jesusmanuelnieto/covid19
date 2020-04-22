@@ -12,8 +12,8 @@
   @repository:  https://github.com/jesusmanuelnieto/covid19.git
   @sources:
   {
-    @data:         https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset#covid_19_data.csv,
-    @dataZip:      https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset/download,
+    @data:         https://github.com/datasets/covid-19/blob/master/data/time-series-19-covid-combined.csv,
+    @dataframe:    https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv,
     @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
   }
 "
@@ -26,16 +26,17 @@ fnLoad_libraries_global <- function(){
 
 # Import Data -------------------------------------------------------------
 
-fnImportData_global <- function (path_dataset,deathTax) {
+fnImportData_global <- function (url_dataset,deathTax) {
   
-  read.csv(path_dataset) %>%
+  read.csv(url_dataset) %>%
     rename (
-      sno        = SNo,
       confirmed  = Confirmed,
       death      = Deaths,
       recovered  = Recovered,
-      obs_date   = ObservationDate,
-      country    = Country.Region
+      obs_date   = Date,
+      country    = Country.Region,
+      lat        = Lat,
+      long       = Long
     ) %>% 
     group_by(
       country,
@@ -449,12 +450,35 @@ fnPlotGlobalLastdate <- function(covid19){
 
 # Main Function ---------------------------------------------------------
 
-fnMainGlobal <- function (path_wd, path_dataset,path_dataframe,deathTax,n_countries){
+fnMainGlobal <- function (config){
+  
+  "
+  config:
 
+  path_wd          -> Path to working directory
+  url_dataset      -> Url to access a input dataset
+  path_dataset     -> Path to dataset input dataset
+  path_dataframe   -> Path to dataframe output dataset
+  deathTax         -> Covid-19 death tax
+  n_countries      -> Top N for countries.
+  
+  "
+  
+  path_wd          = as.character(config$path_wd[1])
+  url_dataset      = as.character(config$url_dataset[1])
+  path_dataset     = as.character(config$path_dataset[1])
+  path_dataframe   = as.character(config$path_dataframe[1])
+  deathTax         = as.double(config$deathTax[1])
+  n_countries      = as.integer(config$n_countries[1])
+  
   fnLoad_libraries_global()
   setwd(path_wd)
   
-  covid19_global <-fnImportData_global(path_dataset,deathTax)
+  covid19_global <-fnImportData_global(url_dataset,deathTax)
+  
+  if (file.exists(path_dataset)) 
+    file.remove(path_dataset)
+  write_csv2(read.csv(url_dataset),path = path_dataset)
   
   if (file.exists(path_dataframe)) 
     file.remove(path_dataframe)
@@ -486,18 +510,4 @@ fnMainGlobal <- function (path_wd, path_dataset,path_dataframe,deathTax,n_countr
 
 # Main --------------------------------------------------------------------
 
-"
-  fnMain:
-    path_wd         : Path working directory,
-    path_dataset    : Path for dataset IN,
-    path_dataframe  : Path for dataframe OUT,
-    deathTax        : Death tax for Covid-19,
-    n_countries     : Number of countries who show in detail wrap
-"
-
-fnMainGlobal("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
-       "./data/csv/global/covid19_global_dataset.csv",
-       "./data/csv/global/covid19_global_dataframe.csv",
-       1.4,
-       10
-      )
+fnMainGlobal(read.csv("./data/csv/global/covid19_global_config.csv", sep =";"))

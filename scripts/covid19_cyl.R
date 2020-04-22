@@ -27,9 +27,9 @@ fnLoad_libraries_cyl <- function(){
 
 # Import Data -------------------------------------------------------------
 
-fnImportData_cyl <- function (path_dataset,deathTax) {
+fnImportData_cyl <- function (url_dataset,deathTax) {
   
-  read.csv(path_dataset[1], sep =";") %>%
+  read.csv(url_dataset[1], sep =";") %>%
     group_by(
       fecha,
       provincia
@@ -40,7 +40,7 @@ fnImportData_cyl <- function (path_dataset,deathTax) {
       hospitalizados_altas   = sum(altas),
       hospitalizados_muertos = sum(fallecimientos)
     ) %>%
-    inner_join(read.csv(path_dataset[2], sep = ";"),by = c("fecha","provincia")) %>%
+    inner_join(read.csv(url_dataset[2], sep = ";"),by = c("fecha","provincia")) %>%
     rename (
       obs_date           = fecha,
       confirmed          = casos_confirmados,
@@ -668,12 +668,44 @@ fnPlotcylNameDetail_lines <- function(covid19, n_names){
 
 # Main Function ---------------------------------------------------------
 
-fnMaincyl <- function (path_wd, path_dataset,path_dataframe,deathTax,n_names){
+fnMaincyl <- function (config){
+  
+  "
+  config:
 
+  path_wd          -> Path to working directory
+  url_dataset1     -> Url to access a input dataset 1
+  url_dataset2     -> Url to access a input dataset 2
+  path_dataset1    -> Path to dataset input dataset 1
+  path_dataset2    -> Path to dataset input dataset 2
+  path_dataframe   -> Path to dataframe output dataset
+  deathTax         -> Covid-19 death tax
+  n_names          -> Top N for names who show in detail wrap
+  
+  "
+  
+  path_wd          = as.character(config$path_wd[1])
+  url_dataset1     = as.character(config$url_dataset1[1])
+  url_dataset2     = as.character(config$url_dataset2[1])
+  path_dataset1    = as.character(config$path_dataset1[1])
+  path_dataset2    = as.character(config$path_dataset2[1])
+  path_dataframe   = as.character(config$path_dataframe[1])
+  deathTax         = as.double(config$deathTax[1])
+  n_names          = as.integer(config$n_names[1])
+  
+  
   fnLoad_libraries_cyl()
   setwd(path_wd)
   
-  covid19_cyl <-fnImportData_cyl(path_dataset,deathTax)
+  covid19_cyl <-fnImportData_cyl(c(url_dataset1,url_dataset2),deathTax)
+  
+  if (file.exists(path_dataset1)) 
+    file.remove(path_dataset1)
+  write_csv2(read.csv(url_dataset1, sep =";"),path = path_dataset1)
+  
+  if (file.exists(path_dataset2)) 
+    file.remove(path_dataset2)
+  write_csv2(read.csv(url_dataset2, sep =";"),path = path_dataset2)
   
   if (file.exists(path_dataframe)) 
     file.remove(path_dataframe)
@@ -711,18 +743,4 @@ fnMaincyl <- function (path_wd, path_dataset,path_dataframe,deathTax,n_names){
 
 # Main --------------------------------------------------------------------
 
-"
-  fnMain:
-    path_wd         : Path working directory,
-    path_dataset    : Paths for dataset IN,
-    path_dataframe  : Path for dataframe OUT,
-    deathTax        : Death tax for Covid-19,
-    n_names         : Number of cca.names who show in detail wrap
-"
-
-fnMaincyl("~/Nextcloud/Documents/Apuntes Actuales/R/covid19",
-       c("./data/csv/cyl/covid19_cyl_dataset1.csv","./data/csv/cyl/covid19_cyl_dataset2.csv"),
-       "./data/csv/cyl/covid19_cyl_dataframe.csv",
-       1.4,
-       4
-      )
+fnMaincyl(read.csv("./data/csv/cyl/covid19_cyl_config.csv", sep =";"))
