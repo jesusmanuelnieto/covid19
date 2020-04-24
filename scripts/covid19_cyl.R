@@ -90,6 +90,31 @@ fnGetNamesList <- function (covid19,n_names){
   return (covid19_top_names_confirmed$name)
 }
 
+fnCreateZipPngCyl <- function (filename){
+  
+  zipFiles = c(
+    "./data/png/cyl/covid19_cyl_plotcyl_confirmed.png",
+    "./data/png/cyl/covid19_cyl_plotcylDetail_confirmed.png",
+    "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmed.png",
+    "./data/png/cyl/covid19_cyl_plotcyl_confirmedrecovered.png",
+    "./data/png/cyl/covid19_cyl_plotcylDetail_confirmedrecovered.png",
+    "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmedrecovered.png",
+    "./data/png/cyl/covid19_cyl_plotcyl_confirmed_estimated.png",
+    "./data/png/cyl/covid19_cyl_plotcylDetail_confirmed_estimated.png",
+    "./data/png/cyl/covid19_cyl_plotcylnameDetail_confirmed_estimated.png",
+    "./data/png/cyl/covid19_cyl_plotcylLastdate.png",
+    "./data/png/cyl/covid19_cyl_plotcylSalamancaLastdate.png",
+    "./data/png/cyl/covid19_cyl_plotcyl_lines.png",
+    "./data/png/cyl/covid19_cyl_plotcylDetail_lines.png",
+    "./data/png/cyl/covid19_cyl_plotcylNameDetail_lines.png"
+  )
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  zip(filename,zipFiles)
+}
+
 # Plots -------------------------------------------------------------------
 
 fnPlotcyl_confirmed <- function(covid19){
@@ -681,6 +706,7 @@ fnMaincyl <- function (config){
   path_dataframe   -> Path to dataframe output dataset
   deathTax         -> Covid-19 death tax
   n_names          -> Top N for names who show in detail wrap
+  path_pngZip      -> Path to png zip file
   
   "
   
@@ -692,6 +718,7 @@ fnMaincyl <- function (config){
   path_dataframe   = as.character(config$path_dataframe[1])
   deathTax         = as.double(config$deathTax[1])
   n_names          = as.integer(config$n_names[1])
+  path_pngZip      = as.character(config$path_pngZip[1])
   
   
   fnLoad_libraries_cyl()
@@ -736,6 +763,11 @@ fnMaincyl <- function (config){
   fnPlotcyl_lines(covid19_cyl)
   fnPlotcylDetail_lines(covid19_cyl)
   fnPlotcylNameDetail_lines(covid19_cyl, n_names)
+  
+  # Zips -------------------------------------
+  
+  # Png
+  fnCreateZipPngCyl(path_pngZip)
   
   return ("Execution OK")
 }

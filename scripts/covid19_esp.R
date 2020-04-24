@@ -109,6 +109,30 @@ fnGetCcaanamesList <- function (covid19,n_ccaa.names){
   return (covid19_top_ccaa.names_confirmed$ccaa.name)
 }
 
+fnCreateZipPngEsp <- function (filename){
+  
+  zipFiles = c(
+    "./data/png/esp/covid19_esp_plotEsp_confirmed.png",
+    "./data/png/esp/covid19_esp_plotEspDetail_confirmed.png",
+    "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmed.png",
+    "./data/png/esp/covid19_esp_plotEsp_confirmedrecovered.png",
+    "./data/png/esp/covid19_esp_plotEspDetail_confirmedrecovered.png",
+    "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmedrecovered.png",
+    "./data/png/esp/covid19_esp_plotEsp_confirmed_estimated.png",
+    "./data/png/esp/covid19_esp_plotEspDetail_confirmed_estimated.png",
+    "./data/png/esp/covid19_esp_plotEspccaanameDetail_confirmed_estimated.png",
+    "./data/png/esp/covid19_esp_plotEspLastdate.png",
+    "./data/png/esp/covid19_esp_plotEsp_lines.png",
+    "./data/png/esp/covid19_esp_plotEspDetail_lines.png",
+    "./data/png/esp/covid19_esp_plotEspCcaanameDetail_lines.png"
+  )
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  zip(filename,zipFiles)
+}
+
 # Plots -------------------------------------------------------------------
 
 fnPlotEsp_confirmed <- function(covid19){
@@ -637,7 +661,8 @@ fnMainEsp <- function (config){
   path_dataframe   -> Path to dataframe output dataset
   deathTax         -> Covid-19 death tax
   n_ccaanames      -> Top N for ccaa.
-  
+  path_pngZip      -> Path to png zip file
+
   "
   
   path_wd          = as.character(config$path_wd[1])
@@ -646,6 +671,7 @@ fnMainEsp <- function (config){
   path_dataframe   = as.character(config$path_dataframe[1])
   deathTax         = as.double(config$deathTax[1])
   n_ccaanames      = as.integer(config$n_ccaanames[1])
+  path_pngZip      = as.character(config$path_pngZip[1])
   
   fnLoad_libraries_esp()
   setwd(path_wd)
@@ -684,6 +710,11 @@ fnMainEsp <- function (config){
   fnPlotEsp_lines(covid19_esp)
   fnPlotEspDetail_lines(covid19_esp)
   fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
+  
+  # Zips -------------------------------------
+  
+  # Png
+  fnCreateZipPngEsp(path_pngZip)
   
   return ("Execution OK")
 }

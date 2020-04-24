@@ -85,6 +85,27 @@ fnGetCountryList <- function (covid19,n_countries){
   return (covid19_top_countries_confirmed$country)
 }
 
+fnCreateZipPngGlobal <- function (filename){
+  
+  zipFiles = c(
+    "./data/png/global/covid19_global_plotGlobal_confirmed.png",
+    "./data/png/global/covid19_global_plotGlobalDetail_confirmed.png",
+    "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmed.png",
+    "./data/png/global/covid19_global_plotGlobal_confirmedrecovered.png",
+    "./data/png/global/covid19_global_plotGlobalDetail_confirmedrecovered.png",
+    "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmedrecovered.png",
+    "./data/png/global/covid19_global_plotGlobal_confirmed_estimated.png",
+    "./data/png/global/covid19_global_plotGlobalDetail_confirmed_estimated.png",
+    "./data/png/global/covid19_global_plotGlobalCountryDetail_confirmed_estimated.png",
+    "./data/png/global/covid19_global_plotGlobalLastdate.png"
+  )
+  
+  if (file.exists(filename)) 
+    file.remove(filename)
+  
+  zip(filename,zipFiles)
+}
+
 # Plots -------------------------------------------------------------------
 
 fnPlotGlobal_confirmed <- function(covid19){
@@ -461,6 +482,7 @@ fnMainGlobal <- function (config){
   path_dataframe   -> Path to dataframe output dataset
   deathTax         -> Covid-19 death tax
   n_countries      -> Top N for countries.
+  path_pngZip      -> Path to png zip file
   
   "
   
@@ -470,6 +492,7 @@ fnMainGlobal <- function (config){
   path_dataframe   = as.character(config$path_dataframe[1])
   deathTax         = as.double(config$deathTax[1])
   n_countries      = as.integer(config$n_countries[1])
+  path_pngZip      = as.character(config$path_pngZip[1])
   
   fnLoad_libraries_global()
   setwd(path_wd)
@@ -503,6 +526,11 @@ fnMainGlobal <- function (config){
   
   # lastdate
   fnPlotGlobalLastdate(covid19_global)
+  
+  # Zips -------------------------------------
+  
+  # Png
+  fnCreateZipPngGlobal(path_pngZip)
 
   return ("Execution OK")
 }
@@ -511,3 +539,4 @@ fnMainGlobal <- function (config){
 # Main --------------------------------------------------------------------
 
 fnMainGlobal(read.csv("./data/csv/global/covid19_global_config.csv", sep =";"))
+
