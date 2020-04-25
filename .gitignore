@@ -41,3 +41,6 @@ vignettes/*.pdf
 
 # Edited files in linux ubuntu
 .~lock.*
+
+# Proyects Data File
+/data/*

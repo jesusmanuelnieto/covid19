@@ -1,0 +1,14 @@
+Para hacer funcionar el código, se tiene que configurar por cada script un fichero de configuración. 
+
+Se adjunta una plantilla del usado para la categoría cyl. 
+
+El fichero se ubicará en ./data/csv/category/
+
+El fichero tendrá el nombre covid19_category_config.csv
+
+El fichero se basa en colocar el nombre de cada variable de configuración por columna en un fichero
+csv, separado por punto y coma ";". 
+
+Las cadenas de texto, irán entre "". 
+
+Formato será utf-8.

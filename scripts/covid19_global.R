@@ -12,7 +12,7 @@
   @repository:  https://github.com/jesusmanuelnieto/covid19.git
   @sources:
   {
-    @data:         https://github.com/datasets/covid-19/blob/master/data/time-series-19-covid-combined.csv,
+    @data:         https://github.com/datasets/covid-19,
     @dataframe:    https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv,
     @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
   }
