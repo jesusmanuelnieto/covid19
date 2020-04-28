@@ -42,6 +42,11 @@ fnImportData_global <- function (url_dataset,deathTax) {
       country,
       obs_date
     ) %>%
+    mutate ( # Change NA to 0
+      confirmed           = fnChangeNaTo0(confirmed),
+      death               = fnChangeNaTo0(death),
+      recovered           = fnChangeNaTo0(recovered)
+    ) %>%
     summarise(
       confirmed             = sum(confirmed),
       death                 = sum(death),
@@ -105,6 +110,20 @@ fnCreateZipPngGlobal <- function (filename){
   
   zip(filename,zipFiles)
 }
+
+fnChangeNaTo0<- function(values){
+  
+  results <- c()
+  for (value in values){
+    if (is.na(value)){
+      results <- c(results,0)
+    } else {
+      results <- c(results,value)
+    }
+  }
+  return (results)
+}
+
 
 # Plots -------------------------------------------------------------------
 
@@ -428,14 +447,20 @@ fnPlotGlobalLastdate <- function(covid19){
     file.remove(filename)
   
   covid19 %>% 
+    filter(
+      !is.na(country)
+    ) %>%
+    group_by(
+      obs_date
+    ) %>%
+    summarise(
+      confirmed            = sum(confirmed),
+      confirmed_estimated  = sum(confirmed_estimated),
+      recovered            = sum(recovered),
+      death                = sum(death)
+    ) %>%
     arrange(
       desc(obs_date)
-    ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(confirmed_estimated),
-      !is.na(recovered),
-      !is.na(death)
     ) %>% 
     head(
       1              # Nos quedamos con la última
@@ -443,7 +468,7 @@ fnPlotGlobalLastdate <- function(covid19){
     gather(
       "type_cases",
       "cases",
-      3:7
+      2:5
     )%>%
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
@@ -539,4 +564,3 @@ fnMainGlobal <- function (config){
 # Main --------------------------------------------------------------------
 
 fnMainGlobal(read.csv("./data/csv/global/covid19_global_config.csv", sep =";"))
-

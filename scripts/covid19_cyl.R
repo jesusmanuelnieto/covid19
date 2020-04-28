@@ -51,6 +51,14 @@ fnImportData_cyl <- function (url_dataset,deathTax) {
       recovered          = hospitalizados_altas,
       name               = provincia
     ) %>%
+    mutate ( # Change NA to 0
+      confirmed           = fnChangeNaTo0(confirmed),
+      confirmed_new       = fnChangeNaTo0(confirmed_new),
+      hospitalized        = fnChangeNaTo0(hospitalized),
+      uci                 = fnChangeNaTo0(uci),
+      death               = fnChangeNaTo0(death),
+      recovered           = fnChangeNaTo0(recovered)
+    ) %>%
     mutate (
       perc_exit           = (death * 100)/(death+recovered),
       confirmedrecovered  = confirmed - recovered,
@@ -114,6 +122,20 @@ fnCreateZipPngCyl <- function (filename){
   
   zip(filename,zipFiles)
 }
+
+fnChangeNaTo0<- function(values){
+  
+  results <- c()
+  for (value in values){
+    if (is.na(value)){
+      results <- c(results,0)
+    } else {
+      results <- c(results,value)
+    }
+  }
+  return (results)
+}
+
 
 # Plots -------------------------------------------------------------------
 
@@ -437,17 +459,23 @@ fnPlotcylLastdate <- function(covid19){
     file.remove(filename)
   
   covid19 %>% 
+    filter(
+      !is.na(name)
+    ) %>%
+    group_by(
+      obs_date
+    ) %>%
+    summarise(
+      confirmed            = sum(confirmed),
+      confirmed_new        = sum(confirmed_new),
+      confirmed_estimated  = sum(confirmed_estimated),
+      recovered            = sum(recovered),
+      death                = sum(death),
+      uci                  = sum(uci),
+      hospitalized         = sum(hospitalized)
+    ) %>%
     arrange(
       desc(obs_date)
-    ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(confirmed_new),
-      !is.na(confirmed_estimated),
-      !is.na(recovered),
-      !is.na(death),
-      !is.na(uci),
-      !is.na(hospitalized)
     ) %>% 
     head(
       1              # Nos quedamos con la última
@@ -455,7 +483,7 @@ fnPlotcylLastdate <- function(covid19){
     gather(
       "type_cases",
       "cases",
-      3:8
+      2:8
     )%>%
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
@@ -489,18 +517,23 @@ fnPlotcylSalamancaLastdate <- function(covid19){
     file.remove(filename)
   
   covid19 %>% 
+    filter(
+      name == 'Salamanca'
+    ) %>%
+    group_by(
+      obs_date
+    ) %>%
+    summarise(
+      confirmed            = sum(confirmed),
+      confirmed_new        = sum(confirmed_new),
+      confirmed_estimated  = sum(confirmed_estimated),
+      recovered            = sum(recovered),
+      death                = sum(death),
+      uci                  = sum(uci),
+      hospitalized         = sum(hospitalized)
+    ) %>%
     arrange(
       desc(obs_date)
-    ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(confirmed_new),
-      !is.na(confirmed_estimated),
-      !is.na(recovered),
-      !is.na(death),
-      !is.na(uci),
-      !is.na(hospitalized),
-      name == 'Salamanca'
     ) %>% 
     head(
       1              # Nos quedamos con la última
@@ -508,7 +541,7 @@ fnPlotcylSalamancaLastdate <- function(covid19){
     gather(
       "type_cases",
       "cases",
-      3:8
+      2:8
     )%>%
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +

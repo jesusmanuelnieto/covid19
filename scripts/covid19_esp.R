@@ -148,7 +148,7 @@ fnCreateZipPngEsp <- function (filename){
   zip(filename,zipFiles)
 }
 
-fnChangeNaTo0 <- function(values){
+fnChangeNaTo0<- function(values){
   
   results <- c()
   for (value in values){
@@ -507,7 +507,7 @@ fnPlotEspLastdate <- function(covid19){
     gather(
       "type_cases",
       "cases",
-      1:8
+      2:8
     )%>%
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
