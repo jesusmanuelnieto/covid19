@@ -503,12 +503,12 @@ fnPlotEspLastdate <- function(covid19){
     ) %>%
     head(
       1              # Nos quedamos con la última
-    ) %>% View()
+    ) %>%
     gather(
       "type_cases",
       "cases",
       1:8
-    )%>% View()
+    )%>%
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
     coord_polar() +
@@ -547,26 +547,23 @@ fnPlotEsp_lines <- function(covid19){
     group_by(
       obs_date
     ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(uci),
-      !is.na(recovered),
-      !is.na(hospitalized),
-      !is.na(death)
-    ) %>%
     summarise(
       confirmed      = sum(confirmed),
       uci            = sum(uci),
       recovered      = sum(recovered),
       hospitalized   = sum(hospitalized),
-      death          = sum(death)
+      death          = sum(death),
+      pcr            = sum(pcr),
+      testac         = sum(testac)
     )%>%
     ggplot(aes(x = obs_date)) +
-    geom_line(aes(y = confirmed)     ,  color = "black")   +
-    geom_line(aes(y = uci)           ,  color = "yellow")  +
-    geom_line(aes(y = recovered)     ,  color = "green")   +
-    geom_line(aes(y = hospitalized)  ,  color = "blue")    +
-    geom_line(aes(y = death)         ,  color = "red")     +
+    geom_line(aes(y = confirmed)     ,  color = "black"   , size=2) +
+    geom_line(aes(y = uci)           ,  color = "yellow"  , size=2) +
+    geom_line(aes(y = recovered)     ,  color = "green"   , size=2) +
+    geom_line(aes(y = hospitalized)  ,  color = "blue"    , size=2) +
+    geom_line(aes(y = death)         ,  color = "red"     , size=2) +
+    geom_line(aes(y = pcr)           ,  color = "pink"    , size=2) +
+    geom_line(aes(y = testac)        ,  color = "brown"   , size=2) +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
@@ -575,7 +572,7 @@ fnPlotEsp_lines <- function(covid19){
       x       = "Cases",
       y       = "Date",
       color   = "Data",
-      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red), pcr (Pink), testac (Brown) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -598,20 +595,15 @@ fnPlotEspDetail_lines <- function(covid19){
   covid19 %>% 
     arrange(
       obs_date
-    ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(uci),
-      !is.na(recovered),
-      !is.na(hospitalized),
-      !is.na(death)
-    ) %>%
+    )%>%
     ggplot(aes(x = obs_date)) +
-    geom_line(aes(y = confirmed)     ,  color = "black")   +
-    geom_line(aes(y = uci)           ,  color = "yellow")  +
-    geom_line(aes(y = recovered)     ,  color = "green")   +
-    geom_line(aes(y = hospitalized)  ,  color = "blue")    +
-    geom_line(aes(y = death)         ,  color = "red")     +
+    geom_line(aes(y = confirmed)     ,  color = "black") +
+    geom_line(aes(y = uci)           ,  color = "yellow") +
+    geom_line(aes(y = recovered)     ,  color = "green") +
+    geom_line(aes(y = hospitalized)  ,  color = "blue") +
+    geom_line(aes(y = death)         ,  color = "red") +
+    geom_line(aes(y = pcr)           ,  color = "pink") +
+    geom_line(aes(y = testac)        ,  color = "brown") +
     facet_wrap(~ccaa.name, nrow=6)  +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
@@ -621,7 +613,7 @@ fnPlotEspDetail_lines <- function(covid19){
       x       = "Cases",
       y       = "Date",
       color   = "Data",
-      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red), pcr (Pink), testac (Brown) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -647,20 +639,15 @@ fnPlotEspCcaanameDetail_lines <- function(covid19, n_ccaanames){
     )  %>% 
     arrange(
       obs_date
-    ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(uci),
-      !is.na(recovered),
-      !is.na(hospitalized),
-      !is.na(death)
-    ) %>%
+    )  %>%
     ggplot(aes(x = obs_date)) +
-    geom_line(aes(y = confirmed)     ,  color = "black")   +
-    geom_line(aes(y = uci)           ,  color = "yellow")  +
-    geom_line(aes(y = recovered)     ,  color = "green")   +
-    geom_line(aes(y = hospitalized)  ,  color = "blue")    +
-    geom_line(aes(y = death)         ,  color = "red")     +
+    geom_line(aes(y = confirmed)     ,  color = "black") +
+    geom_line(aes(y = uci)           ,  color = "yellow") +
+    geom_line(aes(y = recovered)     ,  color = "green") +
+    geom_line(aes(y = hospitalized)  ,  color = "blue") +
+    geom_line(aes(y = death)         ,  color = "red") +
+    geom_line(aes(y = pcr)           ,  color = "pink") +
+    geom_line(aes(y = testac)        ,  color = "brown") +
     facet_wrap(~ccaa.name, nrow=4)  +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
@@ -670,7 +657,7 @@ fnPlotEspCcaanameDetail_lines <- function(covid19, n_ccaanames){
       x       = "Cases",
       y       = "Date",
       color   = "Data",
-      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
+      caption = "INFO: confirmed (Black), hospitalized (Blue), uci (Yellow), recovered (Green), death (Red), pcr (Pink), testac (Brown) Git: https://github.com/jesusmanuelnieto/covid19.git, @autor: https://etani.es"
     )
   
   ggsave(
@@ -724,32 +711,32 @@ fnMainEsp <- function (config){
   # Plots -------------------------------------
   
   # confirmed
-  #fnPlotEsp_confirmed(covid19_esp)
-  #fnPlotEspDetail_confirmed(covid19_esp)
-  #fnPlotEspCcaanameDetail_confirmed(covid19_esp, n_ccaanames)
+  fnPlotEsp_confirmed(covid19_esp)
+  fnPlotEspDetail_confirmed(covid19_esp)
+  fnPlotEspCcaanameDetail_confirmed(covid19_esp, n_ccaanames)
   
   # confirmedrecovered
-  #fnPlotEsp_confirmedrecovered(covid19_esp)
-  #fnPlotEspDetail_confirmedrecovered(covid19_esp)
-  #fnPlotEspCcaanameDetail_confirmedrecovered(covid19_esp, n_ccaanames)
+  fnPlotEsp_confirmedrecovered(covid19_esp)
+  fnPlotEspDetail_confirmedrecovered(covid19_esp)
+  fnPlotEspCcaanameDetail_confirmedrecovered(covid19_esp, n_ccaanames)
   
   # confirmed_estimated
-  #fnPlotEsp_confirmed_estimated(covid19_esp)
-  #fnPlotEspDetail_confirmed_estimated(covid19_esp)
-  #fnPlotEspCcaanameDetail_confirmed_estimated(covid19_esp, n_ccaanames)
+  fnPlotEsp_confirmed_estimated(covid19_esp)
+  fnPlotEspDetail_confirmed_estimated(covid19_esp)
+  fnPlotEspCcaanameDetail_confirmed_estimated(covid19_esp, n_ccaanames)
   
   # lastdate
   fnPlotEspLastdate(covid19_esp)
 
   # lines
-  #fnPlotEsp_lines(covid19_esp)
-  #fnPlotEspDetail_lines(covid19_esp)
-  #fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
+  fnPlotEsp_lines(covid19_esp)
+  fnPlotEspDetail_lines(covid19_esp)
+  fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
   
   # Zips -------------------------------------
   
   # Png
-  #fnCreateZipPngEsp(path_pngZip)
+  fnCreateZipPngEsp(path_pngZip)
   
   return ("Execution OK")
 }
