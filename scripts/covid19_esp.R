@@ -56,7 +56,11 @@ fnImportData_esp <- function (url_dataset,deathTax) {
   read.csv(url_dataset) %>%
     filter(
       CCAA != "Los datos de estas comunidades son datos de prevalencia (personas ingresadas a fecha de hoy). No reflejan el total de personas que han sido hospitalizadas o ingresadas en UCI<a0> a lo largo del periodo de notificaci<f3>n(CL) (CM) (MD) (VC) y (MC)",
-      CCAA != "NOTA: El objetivo de los datos que se publican en esta web es saber el n<fa>mero de casos acumulados a la fecha y que por tanto no se puede deducir que la diferencia entre un d<ed>a y el anterior es el n<fa>mero de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un d<ed>a para otro deben hacerse con precauci<f3>n y son <fa>nicamente la responsabilidad el autor."
+      CCAA != "NOTA: El objetivo de los datos que se publican en esta web es saber el n<fa>mero de casos acumulados a la fecha y que por tanto no se puede deducir que la diferencia entre un d<ed>a y el anterior es el n<fa>mero de casos nuevos ya que esos casos pueden haber sido recuperados de fechas anteriores. Cualquier inferencia que se haga sobre las diferencias de un d<ed>a para otro deben hacerse con precauci<f3>n y son <fa>nicamente la responsabilidad el autor.",
+      CCAA != "* Desde el d<ed>a 11/04/2020 las cifras de hospitalizados de CM son casos acumulados. Previamente se refieren a personas ingresadas ese d<ed>a.",
+      CCAA != "* Desde el d<ed>a 12/04/2020 las cifras de UCIs de CM son casos acumulados. Previamente se refieren a personas ingresadas ese d<ed>a.",
+      CCAA != "** Desde el dia 26/04/2020 los datos de Hospitalizaciones y UCIs de Madrid son datos acumulados. Se Actaulizar<e1> la serie restrospectivamente cuando este disponible.",
+      CCAA != "NOTA2:Se excluyen de la serie las notificaciones de personas  con anticuerpos positivos sin s<ed>ntomas en el momento de realizaci<f3>n de la prueba en los que no se puede establecer un momento de contagio ni si han padecido o no la enfermedad.",
     ) %>%
     inner_join(ccaa, by="CCAA") %>% 
     rename(
@@ -67,8 +71,19 @@ fnImportData_esp <- function (url_dataset,deathTax) {
       uci                = UCI,
       death              = Fallecidos,
       recovered          = Recuperados,
-      ccaa.name          = CCAA.Name
+      ccaa.name          = CCAA.Name,
+      pcr                = PCR.,
+      testac             = TestAc.
     ) %>% 
+    mutate ( # Change NA to 0
+      confirmed           = fnChangeNaTo0(confirmed),
+      hospitalized        = fnChangeNaTo0(hospitalized),
+      uci                 = fnChangeNaTo0(uci),
+      death               = fnChangeNaTo0(death),
+      recovered           = fnChangeNaTo0(recovered),
+      pcr                 = fnChangeNaTo0(pcr),
+      testac              = fnChangeNaTo0(testac)
+    ) %>%
     mutate(
       perc_exit           = (death * 100)/(death+recovered),
       obs_date            = dmy(obs_date),
@@ -131,6 +146,19 @@ fnCreateZipPngEsp <- function (filename){
     file.remove(filename)
   
   zip(filename,zipFiles)
+}
+
+fnChangeNaTo0 <- function(values){
+  
+  results <- c()
+  for (value in values){
+    if (is.na(value)){
+      results <- c(results,0)
+    } else {
+      results <- c(results,value)
+    }
+  }
+  return (results)
 }
 
 # Plots -------------------------------------------------------------------
@@ -455,25 +483,32 @@ fnPlotEspLastdate <- function(covid19){
     file.remove(filename)
   
   covid19 %>% 
+    filter (
+      !is.na(ccaa.name)
+    ) %>% 
+    group_by(
+      obs_date
+    ) %>%
+    summarise(
+      confirmed       = sum (confirmed),
+      pcr             = sum (pcr),
+      testac          = sum (testac),
+      hospitalized    = sum (hospitalized),
+      uci             = sum (uci),
+      death           = sum (death),
+      recovered       = sum (recovered)
+    ) %>%
     arrange(
       desc(obs_date)
     ) %>%
-    filter (
-      !is.na(confirmed),
-      !is.na(confirmed_estimated),
-      !is.na(recovered),
-      !is.na(death),
-      !is.na(uci),
-      !is.na(hospitalized),
-    ) %>% 
     head(
       1              # Nos quedamos con la última
-    ) %>%
+    ) %>% View()
     gather(
       "type_cases",
       "cases",
-      3:7
-    )%>%
+      1:8
+    )%>% View()
     ggplot() +
     geom_bar(aes (x=type_cases, fill = type_cases, y=cases),stat = "identity") +
     coord_polar() +
@@ -689,32 +724,32 @@ fnMainEsp <- function (config){
   # Plots -------------------------------------
   
   # confirmed
-  fnPlotEsp_confirmed(covid19_esp)
-  fnPlotEspDetail_confirmed(covid19_esp)
-  fnPlotEspCcaanameDetail_confirmed(covid19_esp, n_ccaanames)
+  #fnPlotEsp_confirmed(covid19_esp)
+  #fnPlotEspDetail_confirmed(covid19_esp)
+  #fnPlotEspCcaanameDetail_confirmed(covid19_esp, n_ccaanames)
   
   # confirmedrecovered
-  fnPlotEsp_confirmedrecovered(covid19_esp)
-  fnPlotEspDetail_confirmedrecovered(covid19_esp)
-  fnPlotEspCcaanameDetail_confirmedrecovered(covid19_esp, n_ccaanames)
+  #fnPlotEsp_confirmedrecovered(covid19_esp)
+  #fnPlotEspDetail_confirmedrecovered(covid19_esp)
+  #fnPlotEspCcaanameDetail_confirmedrecovered(covid19_esp, n_ccaanames)
   
   # confirmed_estimated
-  fnPlotEsp_confirmed_estimated(covid19_esp)
-  fnPlotEspDetail_confirmed_estimated(covid19_esp)
-  fnPlotEspCcaanameDetail_confirmed_estimated(covid19_esp, n_ccaanames)
+  #fnPlotEsp_confirmed_estimated(covid19_esp)
+  #fnPlotEspDetail_confirmed_estimated(covid19_esp)
+  #fnPlotEspCcaanameDetail_confirmed_estimated(covid19_esp, n_ccaanames)
   
   # lastdate
   fnPlotEspLastdate(covid19_esp)
 
   # lines
-  fnPlotEsp_lines(covid19_esp)
-  fnPlotEspDetail_lines(covid19_esp)
-  fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
+  #fnPlotEsp_lines(covid19_esp)
+  #fnPlotEspDetail_lines(covid19_esp)
+  #fnPlotEspCcaanameDetail_lines(covid19_esp, n_ccaanames)
   
   # Zips -------------------------------------
   
   # Png
-  fnCreateZipPngEsp(path_pngZip)
+  #fnCreateZipPngEsp(path_pngZip)
   
   return ("Execution OK")
 }
