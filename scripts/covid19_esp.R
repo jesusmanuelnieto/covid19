@@ -1,29 +1,22 @@
-"
-  @script:      covid19_esp
-  @autor:       Jesús Manuel Nieto Carracedo
-  @email1:      jesusmanuel.nieto@etani.es
-  @email2:      jesusmanuel.nieto@gmail.com
-  @web   :      https://etani.es
-  @linkedin:    https://es.linkedin.com/in/jes%C3%BAs-manuel-nieto-carracedo-77128424
-  @github:      https://github.com/jesusmanuelnieto
-  @description: Script para la manipulación y generación de varías gráficas sobre la evolución del
-  virus COVID-19 a nivel del Reino de España.
+### INFO
+#  @script:      covid19_esp
+#  @autor:       Jesús Manuel Nieto Carracedo
+#  @email1:      jesusmanuel.nieto@etani.es
+#  @email2:      jesusmanuel.nieto@gmail.com
+#  @web   :      https://etani.es
+#  @linkedin:    https://es.linkedin.com/in/jes%C3%BAs-manuel-nieto-carracedo-77128424
+#  @github:      https://github.com/jesusmanuelnieto
+#  @description: Script para la manipulación y generación de varías gráficas sobre la evolución del
+#  virus COVID-19 a nivel del Reino de España.
 
-  @repository:  https://github.com/jesusmanuelnieto/covid19.git
-  @sources:
-  {
-    @data:         https://covid19.isciii.es/,
-    @dataframe:    https://covid19.isciii.es/resources/serie_historica_acumulados.csv,
-    @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
-  }
-"
-
-# Libraries ---------------------------------------------------------------
-
-fnLoad_libraries_esp <- function(){
-  library(tidyverse)
-  library(lubridate)
-}
+#  @repository:  https://github.com/jesusmanuelnieto/covid19.git
+#  @sources:
+#  {
+#    @data:         https://covid19.isciii.es/,
+#    @dataframe:    https://covid19.isciii.es/resources/serie_historica_acumulados.csv,
+#    @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
+#  }
+###
 
 # Import Data -------------------------------------------------------------
 
@@ -146,19 +139,6 @@ fnCreateZipPngEsp <- function (filename){
     file.remove(filename)
   
   zip(filename,zipFiles)
-}
-
-fnChangeNaTo0<- function(values){
-  
-  results <- c()
-  for (value in values){
-    if (is.na(value)){
-      results <- c(results,0)
-    } else {
-      results <- c(results,value)
-    }
-  }
-  return (results)
 }
 
 # Plots -------------------------------------------------------------------
@@ -695,7 +675,6 @@ fnMainEsp <- function (config){
   n_ccaanames      = as.integer(config$n_ccaanames[1])
   path_pngZip      = as.character(config$path_pngZip[1])
   
-  fnLoad_libraries_esp()
   setwd(path_wd)
   
   covid19_esp <-fnImportData_esp(url_dataset,deathTax)
@@ -740,8 +719,3 @@ fnMainEsp <- function (config){
   
   return ("Execution OK")
 }
-
-
-# Main --------------------------------------------------------------------
-
-fnMainEsp(read.csv("./data/csv/esp/covid19_esp_config.csv", sep =";"))

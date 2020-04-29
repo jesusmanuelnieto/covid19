@@ -1,30 +1,22 @@
-"
-  @script:      covid19_cyl
-  @autor:       Jesús Manuel Nieto Carracedo
-  @email1:      jesusmanuel.nieto@etani.es
-  @email2:      jesusmanuel.nieto@gmail.com
-  @web   :      https://etani.es
-  @linkedin:    https://es.linkedin.com/in/jes%C3%BAs-manuel-nieto-carracedo-77128424
-  @github:      https://github.com/jesusmanuelnieto
-  @description: Script para la manipulación y generación de varías gráficas sobre la evolución del
-  virus COVID-19 a nivel de la comunidad de Castilla & León en el Reino de cylaña.
+### INFO
+#  @script:      covid19_cyl
+#  @autor:       Jesús Manuel Nieto Carracedo
+#  @email1:      jesusmanuel.nieto@etani.es
+#  @email2:      jesusmanuel.nieto@gmail.com
+#  @web   :      https://etani.es
+#  @linkedin:    https://es.linkedin.com/in/jes%C3%BAs-manuel-nieto-carracedo-77128424
+#  @github:      https://github.com/jesusmanuelnieto
+#  @description: Script para la manipulación y generación de varías gráficas sobre la evolución del
+#  virus COVID-19 a nivel de la comunidad de Castilla & León en el Reino de cylaña.
 
-  @repository:  https://github.com/jesusmanuelnieto/covid19.git
-  @sources:
-  {
-    @data:         https://analisis.datosabiertos.jcyl.es/pages/coronavirus/descarga-de-datasets#descargas,
-    @dataset1      https://analisis.datosabiertos.jcyl.es/explore/dataset/situacion-de-hospitalizados-por-coronavirus-en-castilla-y-leon/download/?format=csv&timezone=Europe/Madrid&lang=es&use_labels_for_header=true&csv_separator=%3B,
-    @dataset2      https://analisis.datosabiertos.jcyl.es/explore/dataset/situacion-epidemiologica-coronavirus-en-castilla-y-leon/download/?format=csv&timezone=Europe/Madrid&lang=es&use_labels_for_header=true&csv_separator=%3B
-    @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
-  }
-"
-
-# Libraries ---------------------------------------------------------------
-
-fnLoad_libraries_cyl <- function(){
-  library(tidyverse)
-}
-
+#  @repository:  https://github.com/jesusmanuelnieto/covid19.git
+#  @sources:
+#  {
+#    @data:         https://analisis.datosabiertos.jcyl.es/pages/coronavirus/descarga-de-datasets#descargas,
+#    @dataset1      https://analisis.datosabiertos.jcyl.es/explore/dataset/situacion-de-hospitalizados-por-coronavirus-en-castilla-y-leon/download/?format=csv&timezone=Europe/Madrid&lang=es&use_labels_for_header=true&csv_separator=%3B,
+#    @dataset2      https://analisis.datosabiertos.jcyl.es/explore/dataset/situacion-epidemiologica-coronavirus-en-castilla-y-leon/download/?format=csv&timezone=Europe/Madrid&lang=es&use_labels_for_header=true&csv_separator=%3B
+#    @deathTax:     http://www.telemadrid.es/coronavirus-covid-19/mortalidad-COVID-19-Wuhan-menor-estimado-0-2214678548--20200319021221.html
+#  }
 # Import Data -------------------------------------------------------------
 
 fnImportData_cyl <- function (url_dataset,deathTax) {
@@ -122,20 +114,6 @@ fnCreateZipPngCyl <- function (filename){
   
   zip(filename,zipFiles)
 }
-
-fnChangeNaTo0<- function(values){
-  
-  results <- c()
-  for (value in values){
-    if (is.na(value)){
-      results <- c(results,0)
-    } else {
-      results <- c(results,value)
-    }
-  }
-  return (results)
-}
-
 
 # Plots -------------------------------------------------------------------
 
@@ -726,7 +704,7 @@ fnPlotcylNameDetail_lines <- function(covid19, n_names){
 
 # Main Function ---------------------------------------------------------
 
-fnMaincyl <- function (config){
+fnMainCyl <- function (config){
   
   "
   config:
@@ -754,7 +732,6 @@ fnMaincyl <- function (config){
   path_pngZip      = as.character(config$path_pngZip[1])
   
   
-  fnLoad_libraries_cyl()
   setwd(path_wd)
   
   covid19_cyl <-fnImportData_cyl(c(url_dataset1,url_dataset2),deathTax)
@@ -804,8 +781,3 @@ fnMaincyl <- function (config){
   
   return ("Execution OK")
 }
-
-
-# Main --------------------------------------------------------------------
-
-fnMaincyl(read.csv("./data/csv/cyl/covid19_cyl_config.csv", sep =";"))
