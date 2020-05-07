@@ -12,3 +12,6 @@ csv, separado por punto y coma ";".
 Las cadenas de texto, irán entre "". 
 
 Formato será utf-8.
+
+Para ejecutar todos los scripts, a través del crontab o consola, he creado el fichero exec_crontab.sh,
+El cual se deberá ubicar, en la carpeta ./bash o donde se prefiera, con el nombre que se necesite.
