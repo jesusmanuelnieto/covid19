@@ -680,7 +680,7 @@ fnPlotcylNameDetail_lines <- function(covid19, n_names){
     geom_line(aes(y = recovered)     ,  color = "green")   +
     geom_line(aes(y = hospitalized)  ,  color = "blue")    +
     geom_line(aes(y = death)         ,  color = "red")     +
-    facet_wrap(~name, nrow=4)  +
+    facet_wrap(~name, nrow=2)  +
     theme(
       plot.caption = element_text(hjust = 0.5, color="blue", face="bold")
     )+
