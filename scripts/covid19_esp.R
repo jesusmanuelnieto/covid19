@@ -78,11 +78,11 @@ fnImportData_esp <- function (url_dataset,deathTax) {
       testac              = fnChangeNaTo0(testac)
     ) %>%
     mutate(
+      confirmed           = pcr + testac,
       perc_exit           = (death * 100)/(death+recovered),
       obs_date            = dmy(obs_date),
       confirmedrecovered  = confirmed - recovered,
       confirmed_estimated = (death * 100) /  deathTax
-      
     ) %>%
     return()
 }
